@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 export function About() {
   return (
     <section className="border-b border-white/[0.08] bg-[#111827]">
-      <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+      <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
         <div className="grid gap-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
           <div>
             <div className="flex items-center gap-3">

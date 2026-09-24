@@ -27,7 +27,7 @@ const areas = [
 export function Build() {
   return (
     <section className="border-b border-white/[0.08] bg-[#111827]">
-      <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+      <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
         <div className="grid gap-16 lg:grid-cols-[0.75fr_1.25fr] lg:gap-24">
           <div>
             <div className="flex items-center gap-3">
@@ -68,7 +68,7 @@ export function Build() {
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-medium tracking-[-0.025em] text-white">
+                    <h3 className="text-2xl font-medium tracking-tight text-white">
                       {area.title}
                     </h3>
 

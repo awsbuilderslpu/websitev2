@@ -89,9 +89,9 @@ export default function ProjectsPage() {
       {/* HERO */}
 
       <section className="relative">
-        <div className="absolute right-[-15%] top-[-30%] h-[600px] w-[600px] rounded-full bg-[#A855F7]/10 blur-[130px]" />
+        <div className="absolute right-[-15%] top-[-30%] h-150 w-150 rounded-full bg-[#A855F7]/10 blur-[130px]" />
 
-        <div className="mx-auto max-w-[1440px] px-5 pb-24 pt-28 sm:px-8 sm:pb-32 sm:pt-36 lg:px-10 lg:pb-40 lg:pt-44">
+        <div className="mx-auto max-w-360 px-5 pb-24 pt-28 sm:px-8 sm:pb-32 sm:pt-36 lg:px-10 lg:pb-40 lg:pt-44">
           <div className="flex flex-col gap-10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -128,7 +128,7 @@ export default function ProjectsPage() {
       {/* FEATURED */}
 
       <section className="bg-[#0D1421]">
-        <div className="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 sm:py-28 lg:px-10">
+        <div className="mx-auto max-w-360 px-5 py-20 sm:px-8 sm:py-28 lg:px-10">
           <div className="mb-8 flex items-center justify-between">
             <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#A855F7]">
               01 / Featured
@@ -216,7 +216,7 @@ export default function ProjectsPage() {
       {/* PROJECT INDEX */}
 
       <section className="bg-[#111827]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
           <div className="grid gap-10 lg:grid-cols-[260px_1fr] lg:gap-24">
             <div className="lg:sticky lg:top-28 lg:self-start">
               <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#A855F7]">
@@ -295,7 +295,7 @@ export default function ProjectsPage() {
       {/* RELATIONSHIP */}
 
       <section className="bg-[#0D1421]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
           <div className="grid gap-16 lg:grid-cols-[0.7fr_1.3fr] lg:gap-32">
             <div>
               <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#A855F7]">
@@ -374,7 +374,7 @@ export default function ProjectsPage() {
       {/* CTA */}
 
       <section className="bg-[#A855F7] text-[#111827]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-36">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-36">
           <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="font-mono text-[9px] uppercase tracking-[0.18em] opacity-60">

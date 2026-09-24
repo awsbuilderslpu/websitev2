@@ -62,7 +62,7 @@ export default function CommunityPage() {
       <section className="relative overflow-hidden border-b border-white/[0.08]">
         <div className="absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-[#A855F7]/10 blur-3xl" />
 
-        <div className="mx-auto max-w-[1440px] px-5 py-28 sm:px-8 sm:py-36 lg:px-10 lg:py-10">
+        <div className="mx-auto max-w-360 px-5 py-28 sm:px-8 sm:py-36 lg:px-10 lg:py-10">
           <div className="max-w-5xl">
             <div className="flex items-center gap-3">
               <span className="h-1.5 w-1.5 rounded-full bg-[#A855F7]" />
@@ -87,7 +87,7 @@ export default function CommunityPage() {
       </section>
 
       <section className="border-b border-white/[0.08] bg-[#0D1421]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
           <div className="grid gap-16 lg:grid-cols-[0.75fr_1.25fr] lg:gap-28">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
@@ -119,7 +119,7 @@ export default function CommunityPage() {
       </section>
 
       <section className="border-b border-white/[0.08] bg-[#111827]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
           <div className="max-w-3xl">
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
               Get involved
@@ -162,7 +162,7 @@ export default function CommunityPage() {
       </section>
 
       <section className="overflow-hidden border-b border-white/[0.08] bg-[#0D1421]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
           <div className="grid items-center gap-16 lg:grid-cols-[1fr_0.85fr] lg:gap-24">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
@@ -208,7 +208,7 @@ export default function CommunityPage() {
       </section>
 
       <section className="border-b border-white/[0.08] bg-[#111827]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
           <div className="max-w-4xl">
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
               How we show up
@@ -247,7 +247,7 @@ export default function CommunityPage() {
       </section>
 
       <section className="bg-[#A855F7] text-[#111827]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-36">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-36">
           <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.16em] opacity-70">

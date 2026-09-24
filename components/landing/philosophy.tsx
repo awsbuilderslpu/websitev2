@@ -22,7 +22,7 @@ const principles = [
 export function Philosophy() {
   return (
     <section className="border-b border-white/[0.08] bg-[#111827]">
-      <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+      <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
         <div className="max-w-5xl">
           <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
             What we believe

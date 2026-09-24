@@ -1,273 +1,327 @@
-import { ArrowUpRight, Globe } from "lucide-react";
+import {
+  ArrowUpRight,
+  Globe,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-type Speaker = {
-  id: string;
-  name: string;
-  bio: string | null;
-  designation: string | null;
-  company: string | null;
-  avatar_url: string | null;
-  linkedin_url: string | null;
-  github_url: string | null;
-  x_url: string | null;
-  website_url: string | null;
-};
-
-async function getSpeakers(): Promise<Speaker[]> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-  const response = await fetch(`${baseUrl}/api/speakers`, {
-    next: {
-      revalidate: 60,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch speakers");
-  }
-
-  const data = await response.json();
-
-  return data.speakers;
-}
+import {
+  getPublicSpeakers,
+  type Speaker,
+} from "@/lib/speakers";
 
 export default async function SpeakersPage() {
-  const speakers = await getSpeakers();
+  const speakers = await getPublicSpeakers();
+
+  const totalSessions = speakers.reduce(
+    (total, speaker) => total + speaker.talks_count,
+    0,
+  );
 
   return (
     <main className="min-h-screen bg-[#111827] text-[#F5F5F5]">
-      <section className="relative overflow-hidden border-b border-white/10">
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-[#A855F7]/10 blur-[130px]" />
+      <section className="relative border-b border-white/10 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 opacity-30">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:72px_72px]" />
+        </div>
 
-        <div className="mx-auto max-w-[1440px] px-5 pb-24 pt-24 sm:px-8 lg:px-10 lg:pb-32 lg:pt-32">
-          <div className="max-w-4xl">
-            <div className="mb-8 flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
-              <span className="h-px w-8 bg-[#A855F7]" />
-              Speakers
+        <div className="pointer-events-none absolute -right-48 -top-48 h-150 w-150 rounded-full bg-[#A855F7]/8 blur-[150px]" />
+
+        <div className="relative mx-auto max-w-360 px-5 pb-16 pt-14 sm:px-8 lg:px-10 lg:pb-20 lg:pt-20">
+          <div className="grid gap-12 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div>
+              <div className="mb-6 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[#B45CFF]">
+                <span className="h-px w-7 bg-[#A855F7]" />
+                Speaker directory
+              </div>
+
+              <h1 className="max-w-4xl text-5xl font-semibold leading-[0.98] tracking-[-0.05em] sm:text-6xl lg:text-[5.4rem]">
+                Meet the people
+                <br />
+                behind the ideas.
+              </h1>
+
+              <p className="mt-7 max-w-2xl text-base leading-7 text-[#9CA3AF] sm:text-lg">
+                Engineers, builders, educators, founders, and
+                technologists who share their experience with
+                the AWS Student Builder Group at LPU.
+              </p>
             </div>
 
-            <h1 className="max-w-4xl text-5xl font-bold leading-[0.95] tracking-[-0.055em] sm:text-6xl lg:text-[6rem]">
-              People who
-              <br />
-              <span className="text-[#A855F7]">move ideas forward.</span>
-            </h1>
+            <div className="flex gap-8 border-t border-white/10 pt-5 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+              <DirectoryStat
+                icon={<Users size={15} />}
+                value={speakers.length}
+                label={
+                  speakers.length === 1
+                    ? "Speaker"
+                    : "Speakers"
+                }
+              />
 
-            <p className="mt-8 max-w-2xl text-lg leading-8 text-[#C7CAD2] sm:text-xl">
-              Meet the builders, engineers, founders, educators, and
-              technologists who share their experience with the AWS Student
-              Builder Group at LPU.
-            </p>
+              <div className="h-10 w-px bg-white/10" />
+
+              <DirectoryStat
+                value={totalSessions}
+                label={
+                  totalSessions === 1
+                    ? "Session"
+                    : "Sessions"
+                }
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-10 lg:py-28">
-        <div className="mb-12 flex items-end justify-between gap-8">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
-              The people behind the sessions
-            </p>
+      <section className="mx-auto max-w-360 px-5 py-16 sm:px-8 lg:px-10 lg:py-20">
+        <div className="mb-7 flex items-center justify-between border-b border-white/10 pb-4">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#596273]">
+            Speakers
+          </p>
 
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
-              Learn from people who build.
-            </h2>
-          </div>
-
-          <p className="hidden max-w-sm text-right text-sm leading-6 text-[#9CA3AF] md:block">
-            Every speaker brings a different perspective, experience, and
-            story to the community.
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#596273]">
+            {String(speakers.length).padStart(2, "0")} profiles
           </p>
         </div>
 
         {speakers.length === 0 ? (
-          <div className="border-y border-white/10 py-24 text-center">
-            <p className="font-mono text-sm text-[#9CA3AF]">
-              No speakers available yet.
-            </p>
-          </div>
+          <EmptyState />
         ) : (
           <div className="border-t border-white/10">
             {speakers.map((speaker, index) => (
-              <article
+              <SpeakerRow
                 key={speaker.id}
-                className="group border-b border-white/10 py-8 transition-colors duration-300 hover:bg-white/[0.025] sm:py-10 lg:py-12"
-              >
-                <div className="grid items-center gap-8 lg:grid-cols-[70px_150px_1fr_auto] lg:gap-10">
-                  <span className="font-mono text-xs text-[#6B7280]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-
-                  <div className="relative h-24 w-24 overflow-hidden bg-[#172033] sm:h-28 sm:w-28">
-                    {speaker.avatar_url ? (
-                      <Image
-                        src={speaker.avatar_url}
-                        alt={speaker.name}
-                        fill
-                        sizes="112px"
-                        className="object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-3xl font-semibold text-[#A855F7]">
-                        {speaker.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <h3 className="text-2xl font-semibold tracking-[-0.03em] transition-colors group-hover:text-[#B45CFF] sm:text-3xl">
-                      {speaker.name}
-                    </h3>
-
-                    {(speaker.designation || speaker.company) && (
-                      <p className="mt-2 text-sm text-[#C7CAD2] sm:text-base">
-                        {speaker.designation}
-                        {speaker.designation && speaker.company && " · "}
-                        {speaker.company}
-                      </p>
-                    )}
-
-                    {speaker.bio && (
-                      <p className="mt-4 max-w-2xl text-sm leading-6 text-[#8F96A5]">
-                        {speaker.bio}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 lg:justify-end">
-                    {speaker.linkedin_url && (
-                      <SocialLink
-                        href={speaker.linkedin_url}
-                        label="LinkedIn"
-                      >
-                        <span className="text-[13px] font-bold leading-none">
-                          in
-                        </span>
-                      </SocialLink>
-                    )}
-
-                    {speaker.github_url && (
-                      <SocialLink
-                        href={speaker.github_url}
-                        label="GitHub"
-                      >
-                        <span className="font-mono text-[11px] font-medium leading-none">
-                          GH
-                        </span>
-                      </SocialLink>
-                    )}
-
-                    {speaker.x_url && (
-                      <SocialLink href={speaker.x_url} label="X">
-                        <span className="text-sm font-medium leading-none">
-                          𝕏
-                        </span>
-                      </SocialLink>
-                    )}
-
-                    {speaker.website_url && (
-                      <SocialLink
-                        href={speaker.website_url}
-                        label="Website"
-                      >
-                        <Globe size={17} />
-                      </SocialLink>
-                    )}
-
-                    <Link
-                      href={`/speakers/${speaker.id}`}
-                      className="ml-2 inline-flex h-10 w-10 items-center justify-center border border-white/10 text-[#C7CAD2] transition-all duration-300 hover:border-[#A855F7] hover:bg-[#A855F7] hover:text-white"
-                      aria-label={`View ${speaker.name}`}
-                    >
-                      <ArrowUpRight size={18} />
-                    </Link>
-                  </div>
-                </div>
-              </article>
+                speaker={speaker}
+                index={index}
+              />
             ))}
           </div>
         )}
       </section>
 
-      <section className="border-t border-white/10">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 lg:px-10 lg:py-32">
-          <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-end">
+      <section className="border-t border-white/10 bg-[#0D1421]">
+        <div className="mx-auto max-w-360 px-5 py-16 sm:px-8 lg:px-10 lg:py-20">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
-                More voices
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#B45CFF]">
+                Continue exploring
               </p>
 
-              <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">
-                Great communities are built around great conversations.
+              <h2 className="mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-4xl">
+                Follow the conversations beyond
+                the speaker list.
               </h2>
             </div>
 
-            <div className="lg:pl-20">
-              <p className="max-w-xl text-lg leading-8 text-[#C7CAD2]">
-                From technical deep dives to career stories and lessons from
-                the real world, our sessions are designed to give builders
-                something they can take with them.
-              </p>
-
+            <div className="flex flex-wrap gap-3">
               <Link
                 href="/events"
-                className="mt-8 inline-flex items-center gap-3 border border-[#A855F7] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#A855F7]"
+                className="inline-flex items-center gap-2 border border-white/10 px-5 py-3 text-sm font-medium text-[#C7CAD2] transition-colors hover:border-white/20 hover:bg-white/[0.03] hover:text-white"
               >
-                Explore events
-                <ArrowUpRight size={17} />
+                Browse events
+                <ArrowUpRight size={16} />
+              </Link>
+
+              <Link
+                href="/community"
+                className="inline-flex items-center gap-2 bg-[#A855F7] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#B45CFF]"
+              >
+                Explore community
+                <ArrowUpRight size={16} />
               </Link>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="bg-[#A855F7] text-white">
-        <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 py-20 sm:px-8 lg:flex-row lg:items-end lg:justify-between lg:px-10 lg:py-24">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
-              AWS Student Builder Group
-            </p>
-
-            <h2 className="mt-5 max-w-2xl text-4xl font-bold leading-tight tracking-[-0.045em] sm:text-5xl">
-              Come for the session.
-              <br />
-              Stay for the community.
-            </h2>
-          </div>
-
-          <Link
-            href="/community"
-            className="inline-flex w-fit items-center gap-3 border border-white px-6 py-3 text-sm font-semibold transition-colors hover:bg-white hover:text-[#A855F7]"
-          >
-            Join the community
-            <ArrowUpRight size={17} />
-          </Link>
         </div>
       </section>
     </main>
   );
 }
 
-function SocialLink({
-  href,
-  label,
-  children,
+function SpeakerRow({
+  speaker,
+  index,
 }: {
-  href: string;
-  label: string;
-  children: React.ReactNode;
+  speaker: Speaker;
+  index: number;
 }) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label}
-      className="inline-flex h-10 w-10 items-center justify-center border border-white/10 text-[#9CA3AF] transition-all duration-300 hover:border-[#A855F7] hover:bg-[#A855F7] hover:text-white"
-    >
-      {children}
-    </a>
+    <article className="group border-b border-white/10">
+      <Link
+        href={`/speakers/${speaker.id}`}
+        className="grid gap-7 py-8 transition-colors duration-300 hover:bg-white/[0.02] sm:py-9 lg:grid-cols-[48px_96px_1fr_auto] lg:items-center lg:gap-8 lg:py-10"
+      >
+        <span className="font-mono text-[10px] tracking-[0.12em] text-[#596273]">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+
+        <SpeakerAvatar speaker={speaker} />
+
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <h2 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-[#B45CFF] sm:text-2xl">
+              {speaker.name}
+            </h2>
+
+            {speaker.talks_count > 0 && (
+              <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-[#596273]">
+                {String(speaker.talks_count).padStart(
+                  2,
+                  "0",
+                )}{" "}
+                {speaker.talks_count === 1
+                  ? "session"
+                  : "sessions"}
+              </span>
+            )}
+          </div>
+
+          {(speaker.designation || speaker.company) && (
+            <p className="mt-2 text-sm text-[#C7CAD2]">
+              {speaker.designation}
+              {speaker.designation &&
+                speaker.company &&
+                " · "}
+              {speaker.company}
+            </p>
+          )}
+
+          {speaker.bio && (
+            <p className="mt-3 max-w-2xl line-clamp-2 text-sm leading-6 text-[#737B8C]">
+              {speaker.bio}
+            </p>
+          )}
+
+          <div className="mt-4 flex items-center gap-4">
+            <SpeakerSocials speaker={speaker} />
+          </div>
+        </div>
+
+        <div className="flex items-center lg:justify-end">
+          <span className="inline-flex h-10 w-10 items-center justify-center border border-white/10 text-[#737B8C] transition-all duration-300 group-hover:border-[#A855F7] group-hover:bg-[#A855F7] group-hover:text-white">
+            <ArrowUpRight size={17} />
+          </span>
+        </div>
+      </Link>
+    </article>
+  );
+}
+
+function SpeakerAvatar({
+  speaker,
+}: {
+  speaker: Speaker;
+}) {
+  const initials = speaker.name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) =>
+      part.charAt(0).toUpperCase(),
+    )
+    .join("");
+
+  return (
+    <div className="relative h-20 w-20 overflow-hidden bg-[#172033] sm:h-24 sm:w-24">
+      {speaker.avatar_url ? (
+        <Image
+          src={speaker.avatar_url}
+          alt={speaker.name}
+          fill
+          sizes="96px"
+          className="object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-[#A855F7]">
+          {initials}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SpeakerSocials({
+  speaker,
+}: {
+  speaker: Speaker;
+}) {
+  return (
+    <div className="flex items-center gap-3 text-[#596273]">
+      {speaker.linkedin_url && (
+        <span className="text-[11px] font-bold transition-colors group-hover:text-[#8F96A5]">
+          in
+        </span>
+      )}
+
+      {speaker.github_url && (
+        <span className="font-mono text-[10px] transition-colors group-hover:text-[#8F96A5]">
+          GH
+        </span>
+      )}
+
+      {speaker.x_url && (
+        <span className="text-xs transition-colors group-hover:text-[#8F96A5]">
+          𝕏
+        </span>
+      )}
+
+      {speaker.website_url && (
+        <Globe
+          size={14}
+          className="transition-colors group-hover:text-[#8F96A5]"
+        />
+      )}
+    </div>
+  );
+}
+
+function DirectoryStat({
+  icon,
+  value,
+  label,
+}: {
+  icon?: React.ReactNode;
+  value: number;
+  label: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        {icon && (
+          <span className="text-[#A855F7]">
+            {icon}
+          </span>
+        )}
+
+        <span className="text-2xl font-semibold tracking-[-0.03em]">
+          {String(value).padStart(2, "0")}
+        </span>
+      </div>
+
+      <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.15em] text-[#596273]">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="border-b border-white/10 py-20">
+      <div className="max-w-md">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#B45CFF]">
+          No profiles
+        </p>
+
+        <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em]">
+          Speaker profiles will appear here.
+        </h2>
+
+        <p className="mt-3 text-sm leading-6 text-[#737B8C]">
+          Check back when the next set of sessions is
+          announced.
+        </p>
+      </div>
+    </div>
   );
 }

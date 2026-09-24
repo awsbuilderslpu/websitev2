@@ -4,7 +4,7 @@ import { ArrowUpRight, Globe2, Users } from "lucide-react";
 export function Community() {
   return (
     <section className="overflow-hidden border-b border-white/[0.08] bg-[#0D1421]">
-      <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+      <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
         <div className="grid items-center gap-16 lg:grid-cols-[1fr_0.85fr] lg:gap-24">
           <div>
             <div className="flex items-center gap-3">

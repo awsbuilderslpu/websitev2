@@ -57,7 +57,7 @@ export function Perks() {
   return (
     <main className="overflow-hidden bg-[#111827]">
       <section className="relative">
-        <div className="mx-auto max-w-[1440px] px-5 pb-28 pt-16 sm:px-8 sm:pb-36 sm:pt-32 lg:px-10 lg:pb-44 lg:pt-10">
+        <div className="mx-auto max-w-360 px-5 pb-28 pt-16 sm:px-8 sm:pb-36 sm:pt-32 lg:px-10 lg:pb-44 lg:pt-10">
           <div className="max-w-6xl">
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#8F96A5]">
               Member perks
@@ -87,7 +87,7 @@ export function Perks() {
       </section>
 
       <section className="border-y border-white/[0.08]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
           <div className="grid gap-16 lg:grid-cols-[0.7fr_1.3fr] lg:gap-28">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
@@ -132,7 +132,7 @@ export function Perks() {
       </section>
 
       <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-[1440px] px-5 py-28 sm:px-8 sm:py-36 lg:px-10 lg:py-44">
+        <div className="mx-auto max-w-360 px-5 py-28 sm:px-8 sm:py-36 lg:px-10 lg:py-44">
           <div className="grid items-center gap-16 lg:grid-cols-[1.15fr_0.85fr] lg:gap-24">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
@@ -175,7 +175,7 @@ export function Perks() {
       </section>
 
       <section className="border-y border-white/[0.08]">
-        <div className="mx-auto max-w-[1440px] px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
+        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
           <div className="grid gap-14 lg:grid-cols-[0.65fr_1.35fr] lg:gap-24">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
@@ -193,7 +193,7 @@ export function Perks() {
               {buildPerks.map((perk) => (
                 <span
                   key={perk}
-                  className="text-2xl font-medium tracking-[-0.025em] text-[#C7CAD2] transition-colors hover:text-[#A855F7] sm:text-3xl"
+                  className="text-2xl font-medium tracking-tight text-[#C7CAD2] transition-colors hover:text-[#A855F7] sm:text-3xl"
                 >
                   {perk}
                 </span>
@@ -204,7 +204,7 @@ export function Perks() {
       </section>
 
       <section>
-        <div className="mx-auto max-w-[1440px] px-5 py-28 sm:px-8 sm:py-36 lg:px-10 lg:py-44">
+        <div className="mx-auto max-w-360 px-5 py-28 sm:px-8 sm:py-36 lg:px-10 lg:py-44">
           <div className="grid gap-16 lg:grid-cols-[1fr_1fr] lg:gap-24">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
@@ -243,7 +243,7 @@ export function Perks() {
       </section>
 
       <section className="px-5 pb-10 sm:px-8 lg:px-10">
-        <div className="mx-auto max-w-[1440px]">
+        <div className="mx-auto max-w-360">
           <div className="relative overflow-hidden bg-[#A855F7] px-7 py-16 sm:px-12 lg:px-16 lg:py-20">
             <div className="relative z-10 flex flex-col justify-between gap-10 md:flex-row md:items-end">
               <div>

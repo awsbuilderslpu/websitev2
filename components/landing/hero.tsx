@@ -7,7 +7,7 @@ export function Hero() {
     <section className="relative overflow-hidden bg-[#111827]">
       <div className="pointer-events-none absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-[#A855F7]/10 blur-[120px]" />
 
-      <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
+      <div className="mx-auto max-w-360 px-5 sm:px-8 lg:px-10">
         <div className="relative grid min-h-[calc(100vh-76px)] items-center gap-14 py-16 lg:grid-cols-[1fr_0.9fr] lg:gap-20 lg:py-20">
           
           <div className="relative z-10">

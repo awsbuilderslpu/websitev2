@@ -7,53 +7,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-type EventSpeaker = {
-  id: string;
-  name: string;
-  avatar_url: string | null;
-};
-
-type EventTalk = {
-  id: string;
-  title: string;
-  talk_type: string;
-  speakers: EventSpeaker[];
-};
-
-type Event = {
-  id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  cover_image_url: string | null;
-  event_type: string;
-  location: string | null;
-  online_url: string | null;
-  start_at: string;
-  end_at: string;
-  registration_deadline: string;
-  is_paid: boolean;
-  talks: EventTalk[];
-};
-
-async function getEvents(): Promise<Event[]> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-  const response = await fetch(`${baseUrl}/api/events`, {
-    next: {
-      revalidate: 60,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch events");
-  }
-
-  const data = await response.json();
-
-  return data.events;
-}
+import { getPublicEvents, type Event } from "@/lib/events";
 
 function formatDate(date: string) {
   return new Intl.DateTimeFormat("en-IN", {
@@ -101,7 +55,13 @@ function getEventType(event: Event) {
 }
 
 export default async function EventsPage() {
-  const events = await getEvents();
+  let events: Event[] = [];
+
+  try {
+    events = await getPublicEvents();
+  } catch (error) {
+    console.error("Failed to load events:", error);
+  }
 
   const upcomingEvents = events.filter((event) =>
     isUpcoming(event.start_at),
@@ -116,9 +76,9 @@ export default async function EventsPage() {
   return (
     <main className="min-h-screen bg-[#111827] text-[#F5F5F5]">
       <section className="relative overflow-hidden border-b border-white/10">
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-[#A855F7]/10 blur-[130px]" />
+        <div className="pointer-events-none absolute -right-40 -top-40 h-130 w-130 rounded-full bg-[#A855F7]/10 blur-[130px]" />
 
-        <div className="mx-auto max-w-[1440px] px-5 pb-20 pt-24 sm:px-8 lg:px-10 lg:pb-28 lg:pt-32">
+        <div className="mx-auto max-w-360 px-5 pb-20 pt-24 sm:px-8 lg:px-10 lg:pb-28 lg:pt-32">
           <div className="max-w-5xl">
             <div className="mb-8 flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
               <span className="h-px w-8 bg-[#A855F7]" />
@@ -128,28 +88,29 @@ export default async function EventsPage() {
             <h1 className="max-w-4xl text-5xl font-bold leading-[0.95] tracking-[-0.055em] sm:text-6xl lg:text-[6rem]">
               Learn something.
               <br />
-              <span className="text-[#A855F7]">Build something.</span>
+              <span className="text-[#A855F7]">
+                Build something.
+              </span>
             </h1>
 
             <p className="mt-8 max-w-2xl text-lg leading-8 text-[#C7CAD2] sm:text-xl">
-              Workshops, technical sessions, community meetups, and
-              conversations with people building the future.
+              Workshops, technical sessions, community meetups,
+              and conversations with people building the future.
             </p>
           </div>
         </div>
       </section>
 
       {featuredEvent && (
-        <section className="mx-auto max-w-[1440px] px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
+        <section className="mx-auto max-w-360 px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
           <div className="mb-8 flex items-center justify-between">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
-                Next up
-              </p>
-            </div>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
+              Next up
+            </p>
 
             <span className="font-mono text-xs text-[#6B7280]">
-              01 / {String(upcomingEvents.length).padStart(2, "0")}
+              01 /{" "}
+              {String(upcomingEvents.length).padStart(2, "0")}
             </span>
           </div>
 
@@ -244,63 +205,89 @@ export default async function EventsPage() {
         </section>
       )}
 
-      <section className="mx-auto max-w-360 px-5 pb-24 sm:px-8 lg:px-10 lg:pb-32">
-        <div className="mb-10 flex items-end justify-between gap-8">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
-              Upcoming
-            </p>
+      {events.length === 0 && (
+        <section className="mx-auto max-w-360 px-5 py-20 sm:px-8 lg:px-10 lg:py-28">
+          <div className="border-y border-white/10 py-16 text-center">
+            <CalendarDays
+              size={28}
+              className="mx-auto text-[#596273]"
+            />
 
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
-              What&apos;s happening next.
+            <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em]">
+              No events yet.
             </h2>
-          </div>
-        </div>
 
-        {upcomingEvents.length <= 1 ? (
-          <div className="border-y border-white/10 py-16">
-            <p className="font-mono text-sm text-[#6B7280]">
-              No more upcoming events yet.
+            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#737B8C]">
+              There are no published events available right now.
+              Check back soon.
             </p>
-          </div>
-        ) : (
-          <div className="border-t border-white/10">
-            {upcomingEvents.slice(1).map((event, index) => (
-              <EventRow
-                key={event.id}
-                event={event}
-                index={index + 2}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {pastEvents.length > 0 && (
-        <section className="border-t border-white/10 bg-[#0D1421]">
-          <div className="mx-auto max-w-360 px-5 py-20 sm:px-8 lg:px-10 lg:py-28">
-            <div className="mb-10">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
-                Archive
-              </p>
-
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
-                Where we&apos;ve been.
-              </h2>
-            </div>
-
-            <div className="border-t border-white/10">
-              {pastEvents.map((event, index) => (
-                <EventRow
-                  key={event.id}
-                  event={event}
-                  index={index + 1}
-                  past
-                />
-              ))}
-            </div>
           </div>
         </section>
+      )}
+
+      {events.length > 0 && (
+        <>
+          <section className="mx-auto max-w-360 px-5 pb-24 sm:px-8 lg:px-10 lg:pb-32">
+            <div className="mb-10 flex items-end justify-between gap-8">
+              <div>
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
+                  Upcoming
+                </p>
+
+                <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
+                  What&apos;s happening next.
+                </h2>
+              </div>
+            </div>
+
+            {upcomingEvents.length <= 1 ? (
+              <div className="border-y border-white/10 py-16">
+                <p className="font-mono text-sm text-[#6B7280]">
+                  No more upcoming events yet.
+                </p>
+              </div>
+            ) : (
+              <div className="border-t border-white/10">
+                {upcomingEvents
+                  .slice(1)
+                  .map((event, index) => (
+                    <EventRow
+                      key={event.id}
+                      event={event}
+                      index={index + 2}
+                    />
+                  ))}
+              </div>
+            )}
+          </section>
+
+          {pastEvents.length > 0 && (
+            <section className="border-t border-white/10 bg-[#0D1421]">
+              <div className="mx-auto max-w-360 px-5 py-20 sm:px-8 lg:px-10 lg:py-28">
+                <div className="mb-10">
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
+                    Archive
+                  </p>
+
+                  <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
+                    Where we&apos;ve been.
+                  </h2>
+                </div>
+
+                <div className="border-t border-white/10">
+                  {pastEvents.map((event, index) => (
+                    <EventRow
+                      key={event.id}
+                      event={event}
+                      index={index + 1}
+                      past
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       <section className="bg-[#A855F7] text-white">
@@ -342,7 +329,7 @@ function EventRow({
   return (
     <Link
       href={`/events/${event.slug}`}
-      className="group grid gap-6 border-b border-white/10 py-8 transition-colors duration-300 hover:bg-white/2.5 sm:grid-cols-[90px_1fr_auto] sm:items-center sm:gap-10 sm:py-10"
+      className="group grid gap-6 border-b border-white/10 py-8 transition-colors duration-300 hover:bg-white/[0.025] sm:grid-cols-[90px_1fr_auto] sm:items-center sm:gap-10 sm:py-10"
     >
       <div>
         <p className="font-mono text-3xl font-medium leading-none text-[#A855F7]">
@@ -363,6 +350,7 @@ function EventRow({
           {past && (
             <>
               <span className="h-1 w-1 bg-[#6B7280]" />
+
               <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#6B7280]">
                 Past event
               </span>
@@ -386,7 +374,9 @@ function EventRow({
 
           <span>
             {event.talks.length}{" "}
-            {event.talks.length === 1 ? "session" : "sessions"}
+            {event.talks.length === 1
+              ? "session"
+              : "sessions"}
           </span>
         </div>
       </div>
@@ -409,7 +399,10 @@ function EventMeta({
 }) {
   return (
     <div className="flex items-center gap-3 text-sm text-[#9CA3AF]">
-      <span className="text-[#A855F7]">{icon}</span>
+      <span className="text-[#A855F7]">
+        {icon}
+      </span>
+
       <span>{text}</span>
     </div>
   );
