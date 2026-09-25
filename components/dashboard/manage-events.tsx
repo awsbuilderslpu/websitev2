@@ -329,7 +329,7 @@ function StatusBadge({
   }
 
   return (
-    <span className="inline-flex items-center border border-white/10 bg-white/[0.03] px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#8F96A5]">
+    <span className="inline-flex items-center border border-white/10 bg-white/3 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#8F96A5]">
       Draft
     </span>
   );

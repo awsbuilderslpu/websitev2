@@ -47,7 +47,7 @@ const adminItems = [
     title: "Manage Badges",
     description:
       "Create badges and manage badge issuance.",
-    href: "/dashboard/badges",
+    href: "/dashboard/badges/manage",
     icon: ShieldCheck,
   },
   {
@@ -287,7 +287,7 @@ export function AdminDashboard({
                   </button>
 
                   <Link
-                    href="/profile"
+                    href="/dashboard/profile"
                     className="flex flex-1 items-center justify-center gap-2 border border-white/10 px-4 py-3 text-xs font-medium text-[#C7CAD2] transition-colors hover:border-[#A855F7] hover:bg-[#A855F7] hover:text-white"
                   >
                     Profile
