@@ -5,23 +5,19 @@ import {
 } from "jose";
 
 const issuer =
-  process.env.SSO_ISSUER ?? "https://sso.awslpu.in";
+  process.env.SSO_ISSUER;
 
 const authorizeUrl =
-  process.env.SSO_AUTHORIZE_URL ??
-  "https://sso.awslpu.in/authorize";
+  process.env.SSO_AUTHORIZE_URL;
 
 const tokenUrl =
-  process.env.SSO_TOKEN_URL ??
-  "https://sso.awslpu.in/oauth/token";
+  process.env.SSO_TOKEN_URL;
 
 const userinfoUrl =
-  process.env.SSO_USERINFO_URL ??
-  "https://sso.awslpu.in/oauth/userinfo";
+  process.env.SSO_USERINFO_URL;
 
 const jwksUrl =
-  process.env.SSO_JWKS_URL ??
-  "https://sso.awslpu.in/oauth/jwks";
+  process.env.SSO_JWKS_URL;
 
 const clientId = process.env.SSO_CLIENT_ID;
 const clientSecret = process.env.SSO_CLIENT_SECRET;
