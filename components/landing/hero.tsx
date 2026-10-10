@@ -1,124 +1,115 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#111827]">
-      <div className="pointer-events-none absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-[#A855F7]/10 blur-[120px]" />
+    <section className="relative overflow-hidden bg-[#FAF9F6] text-[#242333]">
+      <div className="pointer-events-none absolute -right-20 -top-28 h-80 w-80 rounded-full bg-[#FFD166]/35 blur-3xl" />
+      <div className="pointer-events-none absolute -left-32 bottom-0 h-72 w-72 rounded-full bg-[#B8C8FF]/35 blur-3xl" />
 
-      <div className="mx-auto max-w-360 px-5 sm:px-8 lg:px-10">
-        <div className="relative grid min-h-[calc(100vh-76px)] items-center gap-14 py-16 lg:grid-cols-[1fr_0.9fr] lg:gap-20 lg:py-20">
-          
-          <div className="relative z-10">
-            <div className="mb-7 flex items-center gap-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#A855F7]" />
+      <div className="relative mx-auto grid max-w-360 items-center gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:px-10 lg:py-16">
+        <div className="relative z-10">
 
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#8F96A5]">
-                AWS Student Builder Group · LPU
-              </span>
-            </div>
+          <h1 className="max-w-3xl text-5xl font-semibold leading-[0.98] tracking-[-0.065em] sm:text-6xl lg:text-7xl xl:text-8xl">
+            Learn cloud.
+            <br />
+            <span className="text-[#F07832]">Build software.</span>
+            <br />
+            <span className="text-[#5257C8]">Grow together.</span>
+          </h1>
 
-            <h1 className="max-w-3xl text-6xl font-bold leading-[0.92] tracking-[-0.065em] text-[#F5F5F5] sm:text-7xl lg:text-[6.5rem]">
-              Build what&apos;s{" "}
-              <span className="text-[#A855F7]">next.</span>
-            </h1>
+          <p className="mt-6 max-w-lg text-base leading-7 text-[#656474] sm:text-lg sm:leading-8">
+            We&apos;re a student-led tech community at Lovely Professional
+            University, bringing builders together to explore AWS and cloud
+            computing, develop real-world projects, and learn through hands-on
+            workshops, tech talks, and community events.
+          </p>
 
-            <p className="mt-8 max-w-lg text-base leading-7 text-[#AEB4C0] sm:text-lg">
-              A student-led community at Lovely Professional University for
-              people who want to learn cloud, build real products, and grow
-              alongside each other.
-            </p>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link
+              href="/community"
+              className="group inline-flex items-center gap-3 rounded-full bg-[#F07832] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#D96120]"
+            >
+              Join our community
+              <ArrowUpRight
+                size={17}
+                className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              />
+            </Link>
 
-            <div className="mt-9 flex flex-wrap items-center gap-5">
-              <Link
-                href="/events"
-                className="group inline-flex items-center gap-3 bg-[#A855F7] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#B45CFF]"
-              >
-                Explore events
-
-                <ArrowRight
-                  size={16}
-                  className="transition-transform group-hover:translate-x-1"
-                />
-              </Link>
-
-              <Link
-                href="/community"
-                className="group inline-flex items-center gap-2 text-sm font-medium text-[#D8DBE2] transition-colors hover:text-[#B45CFF]"
-              >
-                Meet the community
-
-                <ArrowUpRight
-                  size={15}
-                  className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                />
-              </Link>
-            </div>
-
-            <div className="mt-14 flex items-center gap-8">
-              <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#5F6776]">
-                  Focus
-                </p>
-                <p className="mt-1 text-sm text-[#AEB4C0]">
-                  Cloud · Development
-                </p>
-              </div>
-
-              <div className="h-8 w-px bg-white/[0.1]" />
-
-              <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#5F6776]">
-                  Community
-                </p>
-                <p className="mt-1 text-sm text-[#AEB4C0]">
-                  Learn · Build · Share
-                </p>
-              </div>
-            </div>
+            <Link
+              href="/events"
+              className="group inline-flex items-center gap-2 px-2 py-3 text-sm font-semibold text-[#343348] transition-colors hover:text-[#5257C8]"
+            >
+              Explore events
+              <ArrowRight
+                size={16}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </Link>
           </div>
 
-          <div className="relative">
-            <div className="relative mx-auto max-w-[570px]">
-              <div className="absolute -left-4 -top-4 h-16 w-16 border-l border-t border-[#A855F7]/60" />
+          <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#858292]">
+            <span>Cloud</span>
+            <span className="text-[#F07832]">✳</span>
+            <span>Development</span>
+            <span className="text-[#5257C8]">✳</span>
+            <span>Community</span>
+          </div>
+        </div>
 
-              <div className="absolute -bottom-4 -right-4 h-16 w-16 border-b border-r border-[#A855F7]/60" />
+        <div className="relative mx-auto w-full max-w-[540px] lg:ml-auto">
+          <div className="relative aspect-[0.95] sm:aspect-square">
+            <div className="absolute right-[7%] top-[5%] h-[76%] w-[76%] rotate-[9deg] rounded-[42%_58%_62%_38%/43%_39%_61%_57%] bg-[#FFD166]" />
 
-              <div className="relative overflow-hidden">
-                <Image
-                  src="/images/hero.jpg"
-                  alt="AWS Student Builder Group at LPU"
-                  width={1536}
-                  height={1024}
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 570px"
-                  className="block h-auto w-full"
-                />
+            <div className="absolute right-[2%] top-[14%] h-[67%] w-[68%] -rotate-[8deg] rounded-[55%_45%_37%_63%/42%_56%_44%_58%] bg-[#B9C5FF]" />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#111827]/70 via-transparent to-transparent" />
+            <div className="absolute right-[9%] top-[19%] flex h-[62%] w-[65%] rotate-[4deg] flex-col justify-between rounded-[44%_56%_52%_48%/52%_42%_58%_48%] bg-[#F07832] p-7 text-white sm:p-9">
+              <div className="flex items-start justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em]">
+                  AWS SBG · LPU
+                </span>
+                <ArrowUpRight size={22} />
+              </div>
 
-                <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-5 sm:p-6">
-                  <div>
-                    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/50">
-                      Student community
-                    </p>
+              <div className="-rotate-[4deg]">
+                <p className="text-[clamp(3rem,6vw,5.5rem)] font-semibold leading-[0.82] tracking-[-0.08em]">
+                  IDEAS
+                  <br />
+                  INTO
+                  <br />
+                  <span className="text-[#FFE28A]">ACTION.</span>
+                </p>
+              </div>
 
-                    <p className="mt-1.5 text-lg font-semibold tracking-[-0.02em] text-white">
-                      Learn. Build. Grow.
-                    </p>
-                  </div>
+              <p className="text-xs font-medium text-white/90">
+                Learn together. Build for real.
+              </p>
+            </div>
 
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#A855F7]">
-                    LPU / 01
-                  </span>
-                </div>
+            <div className="absolute left-[2%] top-[14%] flex h-[94px] w-[94px] rotate-[-12deg] items-center justify-center rounded-[28px] bg-[#5257C8] text-white shadow-lg shadow-[#5257C8]/15 sm:h-[112px] sm:w-[112px]">
+              <div className="text-center">
+                <span className="block text-3xl font-semibold leading-none">
+                  {"</>"}
+                </span>
+                <span className="mt-2 block text-[9px] font-semibold uppercase tracking-[0.15em]">
+                  Code
+                </span>
               </div>
             </div>
 
-            <p className="mt-5 text-right font-mono text-[9px] uppercase tracking-[0.18em] text-[#5F6776]">
-              Lovely Professional University · Punjab, India
-            </p>
+            <div className="absolute bottom-[8%] left-[2%] flex h-[86px] w-[86px] items-center justify-center rounded-full bg-[#9BCDB4] text-[#244C3B] sm:h-[102px] sm:w-[102px]">
+              <div className="text-center">
+                <span className="block text-3xl">✳</span>
+                <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.15em]">
+                  Connect
+                </span>
+              </div>
+            </div>
+
+            <div className="absolute bottom-[12%] right-[1%] -rotate-6 rounded-full bg-white px-4 py-3 text-xs font-semibold text-[#343348] shadow-sm sm:right-0">
+              Your next project starts here ↗
+            </div>
           </div>
         </div>
       </div>

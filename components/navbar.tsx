@@ -86,24 +86,16 @@ export function Navbar() {
     function handleClickOutside(event: MouseEvent) {
       if (
         profileRef.current &&
-        !profileRef.current.contains(
-          event.target as Node,
-        )
+        !profileRef.current.contains(event.target as Node)
       ) {
         setProfileOpen(false);
       }
     }
 
-    document.addEventListener(
-      "mousedown",
-      handleClickOutside,
-    );
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside,
-      );
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -116,22 +108,16 @@ export function Navbar() {
   };
 
   const displayName =
-    user?.name ||
-    user?.email?.split("@")[0] ||
-    "Member";
+    user?.name || user?.email?.split("@")[0] || "Member";
 
   const initials = getInitials(displayName);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/8 bg-[#111827]/95 backdrop-blur-xl">
-      <div className="pointer-events-none absolute inset-0 -z-10 opacity-20">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.055)_1px,transparent_1px)] bg-size-[48px_48px]" />
-      </div>
-
-      <div className="mx-auto flex h-19 max-w-360 items-center px-5 sm:px-8 lg:px-10">
+    <header className="sticky top-0 z-50 border-b border-[#EAE6DE] bg-[#FAF9F6]/95 backdrop-blur-xl">
+      <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
         <Link
           href="/"
-          className="flex shrink-0 items-center transition-opacity duration-200 hover:opacity-80"
+          className="flex shrink-0 items-center transition-opacity hover:opacity-80"
         >
           <Image
             src="/images/logo/aws_sbg.png"
@@ -143,7 +129,7 @@ export function Navbar() {
           />
         </Link>
 
-        <nav className="ml-auto hidden items-center gap-1 md:flex">
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-0.5 rounded-full border border-[#EAE6DE] bg-white/90 p-1 shadow-sm shadow-[#242333]/[0.04] lg:flex">
           {navigation.map((item) => {
             const active = isActive(item.href);
 
@@ -151,44 +137,29 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="group relative px-4 py-2.5 text-sm"
+                aria-current={active ? "page" : undefined}
+                className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[13px] transition-colors xl:px-4 ${
+                  active
+                    ? "bg-[#FFF0D8] font-semibold text-[#9A4D00]"
+                    : "font-medium text-[#686676] hover:bg-[#F7F4EE] hover:text-[#242333]"
+                }`}
               >
-                <span
-                  className={
-                    active
-                      ? "text-white"
-                      : "text-[#AEB4C0] transition-colors group-hover:text-white"
-                  }
-                >
-                  {item.label}
-                </span>
-
-                <span
-                  className={`absolute bottom-0 left-4 right-4 h-px origin-left bg-[#A855F7] transition-transform duration-200 ${
-                    active
-                      ? "scale-x-100"
-                      : "scale-x-0 group-hover:scale-x-100"
-                  }`}
-                />
+                {item.label}
               </Link>
             );
           })}
+        </nav>
 
-          <div className="mx-4 h-6 w-px bg-white/10" />
-
+        <div className="ml-auto hidden items-center gap-3 lg:flex">
           {loading ? (
-            <div className="h-10 w-24 animate-pulse bg-white/5" />
+            <div className="h-9 w-20 animate-pulse rounded-full bg-[#EEEAE2]" />
           ) : user ? (
-            <div
-              ref={profileRef}
-              className="relative"
-            >
+            <div ref={profileRef} className="relative">
               <button
                 type="button"
-                onClick={() =>
-                  setProfileOpen((open) => !open)
-                }
-                className="group flex items-center gap-2.5 border border-white/10 bg-white/3 px-2 py-1.5 transition-colors hover:border-white/20 hover:bg-white/6"
+                onClick={() => setProfileOpen((open) => !open)}
+                aria-expanded={profileOpen}
+                className="flex items-center gap-2 rounded-full border border-[#EAE6DE] bg-white px-2.5 py-1.5 transition-colors hover:border-[#F07832]/60"
               >
                 <Avatar
                   src={user.picture}
@@ -196,62 +167,53 @@ export function Navbar() {
                   name={displayName}
                 />
 
-                <div className="hidden max-w-30 text-left lg:block">
-                  <p className="truncate text-xs font-medium text-white">
+                <div className="hidden max-w-28 text-left xl:block">
+                  <p className="truncate text-xs font-semibold text-[#242333]">
                     {displayName}
                   </p>
-
-                  <p className="truncate font-mono text-[9px] uppercase tracking-[0.12em] text-[#737B8C]">
+                  <p className="truncate text-[10px] capitalize text-[#858292]">
                     {user.role}
                   </p>
                 </div>
 
                 <ChevronDown
-                  size={15}
-                  className={`ml-1 text-[#737B8C] transition-transform ${
-                    profileOpen
-                      ? "rotate-180"
-                      : ""
+                  size={14}
+                  className={`text-[#858292] transition-transform ${
+                    profileOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
 
               {profileOpen && (
-                <ProfileMenu
-                  user={user}
-                  displayName={displayName}
-                />
+                <ProfileMenu user={user} displayName={displayName} />
               )}
             </div>
           ) : (
             <Link
               href="/auth/login"
-              className="group inline-flex items-center gap-2 bg-[#A855F7] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#B45CFF]"
+              className="group inline-flex items-center gap-2 rounded-full bg-[#F07832] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#D96120]"
             >
-              <span>Sign in</span>
-
+              Sign in
               <ArrowUpRight
                 size={15}
-                className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
               />
             </Link>
           )}
-        </nav>
+        </div>
 
-        <div className="ml-auto md:hidden">
+        <div className="ml-auto lg:hidden">
           <Sheet>
-            <SheetTrigger className="inline-flex h-10 w-10 items-center justify-center rounded-none border border-white/10 text-white transition-colors hover:border-[#A855F7] hover:bg-[#A855F7]">
-              <Menu size={20} />
-              <span className="sr-only">
-                Open navigation
-              </span>
+            <SheetTrigger className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#EAE6DE] bg-white text-[#242333] transition-colors hover:border-[#F07832] hover:bg-[#FFF0D8]">
+              <Menu size={19} />
+              <span className="sr-only">Open navigation</span>
             </SheetTrigger>
 
             <SheetContent
               side="right"
-              className="w-[320px] rounded-none border-l border-white/10 bg-[#111827] p-0 text-white"
+              className="w-[320px] rounded-none border-l border-[#EAE6DE] bg-[#FAF9F6] p-0 text-[#242333]"
             >
-              <SheetHeader className="border-b border-white/10 p-6 text-left">
+              <SheetHeader className="border-b border-[#EAE6DE] p-5 text-left">
                 <SheetTitle>
                   <Image
                     src="/images/logo/aws_sbg.png"
@@ -263,91 +225,82 @@ export function Navbar() {
                 </SheetTitle>
               </SheetHeader>
 
-              <div className="flex flex-col">
-                {user && (
-                  <div className="border-b border-white/10 p-5">
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        src={user.picture}
-                        initials={initials}
-                        name={displayName}
-                        size="large"
-                      />
+              {user && (
+                <div className="border-b border-[#EAE6DE] p-5">
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      src={user.picture}
+                      initials={initials}
+                      name={displayName}
+                      size="large"
+                    />
 
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-white">
-                          {displayName}
-                        </p>
-
-                        <p className="mt-1 truncate text-xs text-[#737B8C]">
-                          {user.email}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex gap-2">
-                      <Link
-                        href="/dashboard"
-                        className="flex flex-1 items-center justify-center gap-2 border border-white/10 px-3 py-2.5 text-xs font-medium text-[#C7CAD2] transition-colors hover:border-[#A855F7] hover:bg-[#A855F7] hover:text-white"
-                      >
-                        Dashboard
-                        <ArrowUpRight size={14} />
-                      </Link>
-
-                      <Link
-                        href="/auth/logout"
-                        className="flex h-10 w-10 items-center justify-center border border-white/10 text-[#9CA3AF] transition-colors hover:border-red-400/50 hover:bg-red-400/10 hover:text-red-300"
-                        aria-label="Log out"
-                      >
-                        <LogOut size={16} />
-                      </Link>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {displayName}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-[#858292]">
+                        {user.email}
+                      </p>
                     </div>
                   </div>
-                )}
 
-                <nav className="flex flex-col p-4">
-                  {navigation.map((item) => {
-                    const active = isActive(
-                      item.href,
-                    );
-
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`group flex items-center justify-between border-b border-white/[0.07] px-3 py-4 text-sm transition-colors ${
-                          active
-                            ? "text-white"
-                            : "text-[#C7CAD2] hover:bg-white/4 hover:text-white"
-                        }`}
-                      >
-                        <span>
-                          {item.label}
-                        </span>
-
-                        <ArrowUpRight
-                          size={15}
-                          className={
-                            active
-                              ? "text-[#A855F7]"
-                              : "text-[#6B7280] transition-colors group-hover:text-[#A855F7]"
-                          }
-                        />
-                      </Link>
-                    );
-                  })}
-
-                  {!user && !loading && (
+                  <div className="mt-4 flex gap-2">
                     <Link
-                      href="/auth/login"
-                      className="mt-5 flex items-center justify-center gap-2 bg-[#A855F7] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#B45CFF]"
+                      href="/dashboard"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[#EAE6DE] px-3 py-2.5 text-xs font-medium hover:border-[#F07832] hover:bg-[#FFF0D8]"
                     >
-                      <span>Sign in</span>
-                      <ArrowUpRight size={15} />
+                      Dashboard
+                      <ArrowUpRight size={14} />
                     </Link>
-                  )}
-                </nav>
-              </div>
+
+                    <Link
+                      href="/auth/logout"
+                      aria-label="Log out"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-[#EAE6DE] text-[#686676] transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                    >
+                      <LogOut size={16} />
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              <nav className="flex flex-col gap-1 p-4">
+                {navigation.map((item) => {
+                  const active = isActive(item.href);
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      className={`flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors ${
+                        active
+                          ? "bg-[#FFF0D8] font-semibold text-[#9A4D00]"
+                          : "text-[#686676] hover:bg-white hover:text-[#242333]"
+                      }`}
+                    >
+                      {item.label}
+                      <ArrowUpRight
+                        size={15}
+                        className={
+                          active ? "text-[#F07832]" : "text-[#A5A1AD]"
+                        }
+                      />
+                    </Link>
+                  );
+                })}
+
+                {!user && !loading && (
+                  <Link
+                    href="/auth/login"
+                    className="mt-3 flex items-center justify-center gap-2 rounded-full bg-[#F07832] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#D96120]"
+                  >
+                    Sign in
+                    <ArrowUpRight size={15} />
+                  </Link>
+                )}
+              </nav>
             </SheetContent>
           </Sheet>
         </div>
@@ -364,8 +317,8 @@ function ProfileMenu({
   displayName: string;
 }) {
   return (
-    <div className="absolute right-0 top-[calc(100%+10px)] w-70 border border-white/10 bg-[#111827] p-2 shadow-2xl shadow-black/30">
-      <div className="border-b border-white/10 px-3 py-3">
+    <div className="absolute right-0 top-[calc(100%+8px)] w-64 rounded-2xl border border-[#EAE6DE] bg-white p-2 shadow-xl shadow-[#242333]/10">
+      <div className="border-b border-[#F0EDE7] px-3 py-3">
         <div className="flex items-center gap-3">
           <Avatar
             src={user.picture}
@@ -374,13 +327,10 @@ function ProfileMenu({
           />
 
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-white">
+            <p className="truncate text-sm font-semibold text-[#242333]">
               {displayName}
             </p>
-
-            <p className="truncate text-xs text-[#737B8C]">
-              {user.email}
-            </p>
+            <p className="truncate text-xs text-[#858292]">{user.email}</p>
           </div>
         </div>
       </div>
@@ -388,30 +338,29 @@ function ProfileMenu({
       <div className="py-1">
         <Link
           href="/dashboard"
-          className="group flex items-center justify-between px-3 py-3 text-sm text-[#C7CAD2] transition-colors hover:bg-white/5 hover:text-white"
+          className="group flex items-center justify-between rounded-xl px-3 py-3 text-sm text-[#555365] transition-colors hover:bg-[#FAF7F1] hover:text-[#242333]"
         >
           <span className="flex items-center gap-3">
             <UserRound size={16} />
             Dashboard
           </span>
-
           <ArrowUpRight
             size={15}
-            className="text-[#6B7280] transition-colors group-hover:text-[#A855F7]"
+            className="text-[#A5A1AD] group-hover:text-[#F07832]"
           />
         </Link>
 
         <Link
           href="/auth/logout"
-          className="group flex items-center gap-3 px-3 py-3 text-sm text-[#C7CAD2] transition-colors hover:bg-red-400/6 hover:text-red-300"
+          className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-[#555365] transition-colors hover:bg-red-50 hover:text-red-600"
         >
           <LogOut size={16} />
           Log out
         </Link>
       </div>
 
-      <div className="border-t border-white/10 px-3 py-2">
-        <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-[#596273]">
+      <div className="border-t border-[#F0EDE7] px-3 py-2">
+        <p className="text-[10px] font-medium capitalize tracking-wide text-[#858292]">
           {user.role} account
         </p>
       </div>
@@ -431,28 +380,22 @@ function Avatar({
   size?: "normal" | "large";
 }) {
   const dimensions =
-    size === "large"
-      ? "h-11 w-11 text-sm"
-      : "h-8 w-8 text-xs";
+    size === "large" ? "h-11 w-11 text-sm" : "h-8 w-8 text-xs";
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden rounded-full bg-[#A855F7]/15 ${dimensions}`}
+      className={`relative shrink-0 overflow-hidden rounded-full bg-[#FFE8C5] ${dimensions}`}
     >
       {src ? (
         <Image
           src={src}
           alt={name}
           fill
-          sizes={
-            size === "large"
-              ? "44px"
-              : "32px"
-          }
+          sizes={size === "large" ? "44px" : "32px"}
           className="object-cover"
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center font-semibold text-[#C084FC]">
+        <div className="flex h-full w-full items-center justify-center font-semibold text-[#A65316]">
           {initials}
         </div>
       )}

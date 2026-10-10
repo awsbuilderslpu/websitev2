@@ -3,80 +3,95 @@ import { ArrowUpRight, Globe2, Users } from "lucide-react";
 
 export function Community() {
   return (
-    <section className="overflow-hidden border-b border-white/[0.08] bg-[#0D1421]">
-      <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
-        <div className="grid items-center gap-16 lg:grid-cols-[1fr_0.85fr] lg:gap-24">
+    <section className="overflow-hidden border-b border-[#EAE6DE] bg-[#FAF9F6] text-[#242333]">
+      <div className="mx-auto max-w-360 px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
+        <div className="grid items-center gap-10 lg:grid-cols-[1fr_0.9fr] lg:gap-16">
           <div>
-            <div className="flex items-center gap-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#A855F7]" />
-
-              <span className="font-mono text-xs uppercase tracking-[0.16em] text-[#8F96A5]">
-                The community
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#E8E1D7] bg-white px-3 py-2">
+              <span className="h-2 w-2 rounded-full bg-[#5257C8]" />
+              <span className="text-xs font-semibold text-[#555365]">
+                People make the community
               </span>
             </div>
 
-            <h2 className="mt-7 max-w-3xl text-5xl font-semibold leading-[0.95] tracking-[-0.06em] text-white sm:text-6xl lg:text-7xl">
-              Built by
+            <h2 className="mt-6 max-w-3xl text-5xl font-semibold leading-[0.96] tracking-[-0.065em] sm:text-6xl lg:text-7xl">
+              Find your
               <br />
-              <span className="text-[#A855F7]">people.</span>
+              <span className="text-[#F07832]">kind of</span>
               <br />
-              For people.
+              <span className="text-[#5257C8]">people.</span>
             </h2>
 
-            <p className="mt-8 max-w-xl text-base leading-7 text-[#858C9B]">
-              Meet students, developers, creators, mentors, and builders who
-              are learning, experimenting, and creating together at LPU.
+            <p className="mt-6 max-w-lg text-base leading-7 text-[#656474] sm:text-lg sm:leading-8">
+              Have a cloud question, a half-built project, or an idea you
+              can&apos;t stop thinking about? You&apos;ll fit right in. AWS SBG
+              brings LPU students together to learn AWS, share what they know,
+              collaborate on projects, and make technology a little less
+              intimidating.
             </p>
 
             <Link
               href="/community"
-              className="group mt-9 inline-flex items-center gap-3 text-sm font-medium text-white transition-colors hover:text-[#B45CFF]"
+              className="group mt-7 inline-flex items-center gap-3 rounded-full bg-[#5257C8] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#4145AE]"
             >
-              Explore the community
+              Come be part of it
               <ArrowUpRight
                 size={16}
                 className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
               />
             </Link>
+
+            <p className="mt-5 text-sm text-[#858292]">
+              No need to know it all. Just bring your curiosity.
+            </p>
           </div>
 
           <div className="relative mx-auto w-full max-w-[480px]">
             <div className="relative aspect-square">
-              <div className="absolute inset-[8%] rounded-full border border-white/[0.08]" />
+              <div className="absolute right-[7%] top-[5%] h-[70%] w-[70%] rotate-12 rounded-[38%_62%_57%_43%/42%_39%_61%_58%] bg-[#FFD166]" />
 
-              <div className="absolute inset-[20%] rounded-full border border-[#A855F7]/25" />
+              <div className="absolute bottom-[5%] left-[5%] h-[64%] w-[64%] -rotate-12 rounded-[57%_43%_35%_65%/48%_56%_44%_52%] bg-[#B9C5FF]" />
 
-              <div className="absolute inset-[32%] rounded-full bg-[#A855F7]" />
+              <div className="absolute right-[8%] top-[19%] flex h-[53%] w-[65%] rotate-[5deg] flex-col justify-between rounded-[30px] bg-[#F07832] p-6 text-white sm:p-8">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em]">
+                    AWS SBG · LPU
+                  </span>
+                  <Users size={21} />
+                </div>
 
-              <div className="absolute left-[2%] top-[20%] flex h-14 w-14 items-center justify-center border border-white/[0.1] bg-[#111827] text-[#A855F7]">
-                <Users size={21} strokeWidth={1.6} />
-              </div>
+                <div className="-rotate-[5deg]">
+                  <p className="text-5xl font-semibold leading-[0.86] tracking-[-0.075em] sm:text-6xl">
+                    BETTER
+                    <br />
+                    <span className="text-[#FFE3B3]">TOGETHER.</span>
+                  </p>
+                </div>
 
-              <div className="absolute bottom-[15%] right-[5%] flex h-14 w-14 items-center justify-center border border-white/[0.1] bg-[#111827] text-[#A855F7]">
-                <Globe2 size={21} strokeWidth={1.6} />
-              </div>
-
-              <div className="absolute right-[11%] top-[8%] h-2 w-2 bg-[#A855F7]" />
-
-              <div className="absolute bottom-[8%] left-[18%] h-2 w-2 bg-white/30" />
-
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#111827]/60">
-                  AWS SBG
-                </p>
-
-                <p className="mt-1 text-lg font-semibold tracking-[-0.03em] text-[#111827]">
-                  LPU
+                <p className="text-xs font-medium text-white/85">
+                  Different minds. Shared curiosity.
                 </p>
               </div>
-            </div>
 
-            <div className="absolute -bottom-2 left-0 font-mono text-[10px] uppercase tracking-[0.14em] text-[#626A7A]">
-              Learn · Build · Connect
-            </div>
+              <div className="absolute left-[0%] top-[12%] flex h-[82px] w-[82px] -rotate-12 items-center justify-center rounded-[25px] bg-[#5257C8] text-white shadow-lg shadow-[#5257C8]/15 sm:h-[96px] sm:w-[96px]">
+                <div className="text-center">
+                  <Globe2 size={27} strokeWidth={1.6} className="mx-auto" />
+                  <span className="mt-2 block text-[9px] font-semibold uppercase tracking-[0.12em]">
+                    Explore
+                  </span>
+                </div>
+              </div>
 
-            <div className="absolute -right-1 top-1/2 hidden -translate-y-1/2 rotate-90 font-mono text-[10px] uppercase tracking-[0.14em] text-[#626A7A] sm:block">
-              Beyond campus
+              <div className="absolute bottom-[7%] right-[2%] flex h-[88px] w-[88px] rotate-6 flex-col items-center justify-center rounded-full bg-[#DDF2E5] text-[#327454] sm:h-[100px] sm:w-[100px]">
+                <span className="text-3xl">✳</span>
+                <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.12em]">
+                  Connect
+                </span>
+              </div>
+
+              <div className="absolute bottom-[9%] left-[4%] -rotate-6 rounded-full bg-white px-4 py-3 text-xs font-semibold text-[#343348] shadow-sm">
+                Your people are out there ↗
+              </div>
             </div>
           </div>
         </div>

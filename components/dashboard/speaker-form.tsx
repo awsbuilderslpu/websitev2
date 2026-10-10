@@ -1,8 +1,16 @@
 "use client";
 
-import { ArrowLeft, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Eye,
+  Globe,
+  Save,
+  UserRound,
+  X
+} from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type SpeakerFormData = {
@@ -46,6 +54,11 @@ export function SpeakerForm({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [avatarFailed, setAvatarFailed] = useState(false);
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [form.avatar_url]);
 
   function updateField<K extends keyof SpeakerFormData>(
     field: K,
@@ -57,9 +70,7 @@ export function SpeakerForm({
     }));
   }
 
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     try {
@@ -82,9 +93,7 @@ export function SpeakerForm({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || "Failed to save speaker",
-        );
+        throw new Error(data.error || "Failed to save speaker");
       }
 
       router.push("/dashboard/speakers");
@@ -100,174 +109,307 @@ export function SpeakerForm({
     }
   }
 
+  const initials =
+    form.name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("") || "?";
+
   return (
-    <main className="min-h-screen bg-[#111827] text-[#F5F5F5]">
-      <div className="mx-auto max-w-[1100px] px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
+    <main className="min-h-screen bg-[#FAF9F6] text-[#242333]">
+      <div className="mx-auto max-w-7xl px-5 py-7 sm:px-8 lg:px-10 lg:py-10">
         <Link
           href="/dashboard/speakers"
-          className="inline-flex items-center gap-2 text-sm text-[#737B8C] transition-colors hover:text-white"
+          className="group inline-flex items-center gap-2 rounded-full border border-[#EAE6DE] bg-white px-4 py-2.5 text-sm font-medium text-[#656474] transition hover:border-[#D3CCFF] hover:bg-[#E5E2FF] hover:text-[#6252BD]"
         >
-          <ArrowLeft size={16} />
-          Speakers
+          <ArrowLeft
+            size={15}
+            className="transition-transform group-hover:-translate-x-1"
+          />
+          All speakers
         </Link>
 
-        <div className="mt-12">
-          <div className="mb-6 flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
-            <span className="h-px w-8 bg-[#A855F7]" />
-            {mode === "create"
-              ? "New speaker"
-              : "Edit speaker"}
-          </div>
+        <section className="relative mt-7 overflow-hidden rounded-[30px] border border-[#EEE9E0] bg-white p-6 sm:p-9 lg:p-10">
+          <div className="pointer-events-none absolute -right-12 -top-16 h-56 w-56 rounded-full bg-[#E5E2FF]" />
+          <div className="pointer-events-none absolute right-40 top-24 h-16 w-16 rotate-12 rounded-[22px] bg-[#FFE5A5]" />
+          <div className="pointer-events-none absolute bottom-0 right-24 h-14 w-14 rounded-full bg-[#DDF2E5]" />
 
-          <h1 className="text-5xl font-bold tracking-[-0.055em]">
-            {mode === "create"
-              ? "Add Speaker."
-              : "Edit Speaker."}
-          </h1>
+          <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#FFF1E9] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#B95526]">
+                <UserRound size={13} />
+                {mode === "create" ? "A new community voice" : "Speaker studio"}
+              </div>
 
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#8F96A5]">
-            Speaker information is reused across events and
-            sessions.
-          </p>
-        </div>
+              <h1 className="max-w-3xl text-4xl font-semibold leading-[1.06] tracking-[-0.055em] sm:text-5xl lg:text-6xl">
+                {mode === "create" ? (
+                  <>
+                    Give great ideas a{" "}
+                    <span className="text-[#6252BD]">face.</span>
+                  </>
+                ) : (
+                  <>
+                    Make their story{" "}
+                    <span className="text-[#6252BD]">shine.</span>
+                  </>
+                )}
+              </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="mt-12 border-t border-white/10"
-        >
-          <div className="grid gap-10 border-b border-white/10 py-10 lg:grid-cols-[0.45fr_1fr]">
-            <FieldIntro
-              title="Identity"
-              description="The basic public information for this speaker."
-            />
+              <p className="mt-5 max-w-xl text-sm leading-7 text-[#777586] sm:text-base">
+                Add the person behind the ideas. Their profile can be reused
+                across events, talks, workshops, and panels.
+              </p>
+            </div>
 
-            <div className="space-y-6">
-              <Field
-                label="Name"
-                value={form.name}
-                required
-                onChange={(value) =>
-                  updateField("name", value)
-                }
-              />
+            <div className="relative flex items-center gap-4 rounded-[24px] border border-white/80 bg-white/85 p-4 backdrop-blur-sm">
+              <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-[#E5E2FF] text-xl font-semibold text-[#6252BD]">
+                {form.avatar_url.trim() && !avatarFailed ? (
+                  <img
+                    src={form.avatar_url}
+                    alt={form.name || "Speaker preview"}
+                    className="h-full w-full object-cover"
+                    onError={() => setAvatarFailed(true)}
+                  />
+                ) : (
+                  initials
+                )}
+              </div>
 
-              <Field
-                label="Designation"
-                value={form.designation}
-                onChange={(value) =>
-                  updateField("designation", value)
-                }
-              />
-
-              <Field
-                label="Company"
-                value={form.company}
-                onChange={(value) =>
-                  updateField("company", value)
-                }
-              />
-
-              <TextareaField
-                label="Bio"
-                value={form.bio}
-                onChange={(value) =>
-                  updateField("bio", value)
-                }
-              />
+              <div className="min-w-0">
+                <p className="max-w-44 truncate font-semibold">
+                  {form.name || "Your speaker"}
+                </p>
+                <p className="mt-1 max-w-44 truncate text-xs text-[#777586]">
+                  {form.designation || "Their designation"}
+                </p>
+                <p className="mt-1 max-w-44 truncate text-xs text-[#777586]">
+                  {form.company || "Their company"}
+                </p>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div className="grid gap-10 border-b border-white/10 py-10 lg:grid-cols-[0.45fr_1fr]">
-            <FieldIntro
-              title="Profile"
-              description="Avatar and public social links."
-            />
+        <form onSubmit={handleSubmit} className="mt-6">
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="space-y-5">
+              <section className="rounded-[28px] border border-[#EEE9E0] bg-white p-5 sm:p-7">
+                <SectionHeading
+                  number="01"
+                  title="Meet the person"
+                  description="Start with the details people will recognize."
+                  color="lavender"
+                />
 
-            <div className="space-y-6">
-              <Field
-                label="Avatar URL"
-                value={form.avatar_url}
-                onChange={(value) =>
-                  updateField("avatar_url", value)
-                }
-              />
+                <div className="mt-7 grid gap-5 sm:grid-cols-2">
+                  <Field
+                    label="Full name"
+                    value={form.name}
+                    required
+                    placeholder="e.g. Alex Morgan"
+                    onChange={(value) => updateField("name", value)}
+                  />
 
-              <Field
-                label="LinkedIn URL"
-                value={form.linkedin_url}
-                onChange={(value) =>
-                  updateField("linkedin_url", value)
-                }
-              />
+                  <Field
+                    label="Designation"
+                    value={form.designation}
+                    placeholder="e.g. Cloud Architect"
+                    onChange={(value) => updateField("designation", value)}
+                  />
 
-              <Field
-                label="GitHub URL"
-                value={form.github_url}
-                onChange={(value) =>
-                  updateField("github_url", value)
-                }
-              />
+                  <div className="sm:col-span-2">
+                    <Field
+                      label="Company or organization"
+                      value={form.company}
+                      placeholder="e.g. Amazon Web Services"
+                      onChange={(value) => updateField("company", value)}
+                    />
+                  </div>
 
-              <Field
-                label="X URL"
-                value={form.x_url}
-                onChange={(value) =>
-                  updateField("x_url", value)
-                }
-              />
+                  <div className="sm:col-span-2">
+                    <TextareaField
+                      label="Biography"
+                      value={form.bio}
+                      placeholder="Share their background, expertise, and what they love building..."
+                      onChange={(value) => updateField("bio", value)}
+                    />
+                  </div>
+                </div>
+              </section>
 
-              <Field
-                label="Website URL"
-                value={form.website_url}
-                onChange={(value) =>
-                  updateField("website_url", value)
-                }
-              />
+              <section className="rounded-[28px] border border-[#EEE9E0] bg-white p-5 sm:p-7">
+                <SectionHeading
+                  number="02"
+                  title="Around the internet"
+                  description="Help attendees discover more of their work."
+                  color="peach"
+                />
+
+                <div className="mt-7 space-y-5">
+                  <Field
+                    label="Profile image URL"
+                    value={form.avatar_url}
+                    placeholder="https://example.com/avatar.jpg"
+                    onChange={(value) => updateField("avatar_url", value)}
+                  />
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <SocialField
+                        label="LinkedIn"
+                        value={form.linkedin_url}
+                        placeholder="https://linkedin.com/in/..."
+                        icon={<span className="text-xs font-bold">in</span>}
+                        onChange={(value) => updateField("linkedin_url", value)}
+                      />
+
+                      <SocialField
+                        label="GitHub"
+                        value={form.github_url}
+                        placeholder="https://github.com/..."
+                        icon={<span className="text-xs font-bold">GH</span>}
+                        onChange={(value) => updateField("github_url", value)}
+                      />
+
+                    <SocialField
+                      label="X"
+                      value={form.x_url}
+                      placeholder="https://x.com/..."
+                      icon={<X size={15} />}
+                      onChange={(value) => updateField("x_url", value)}
+                    />
+
+                    <SocialField
+                      label="Personal website"
+                      value={form.website_url}
+                      placeholder="https://example.com"
+                      icon={<Globe size={15} />}
+                      onChange={(value) => updateField("website_url", value)}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {error && (
+                <div
+                  role="alert"
+                  className="rounded-[20px] border border-[#F1C7BC] bg-[#FFF1E9] p-4 text-sm text-[#963F2A]"
+                >
+                  <p className="font-semibold">Couldn't save this speaker.</p>
+                  <p className="mt-1 leading-6">{error}</p>
+                </div>
+              )}
             </div>
-          </div>
 
-          <div className="grid gap-10 border-b border-white/10 py-10 lg:grid-cols-[0.45fr_1fr]">
-            <FieldIntro
-              title="Visibility"
-              description="Control whether this speaker appears publicly."
-            />
+            <aside className="space-y-5 lg:sticky lg:top-6">
+              <section className="overflow-hidden rounded-[28px] border border-[#EEE9E0] bg-white">
+                <div className="bg-[#DDF2E5] px-5 py-5 sm:px-6">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.13em] text-[#287B56]">
+                    <Eye size={14} />
+                    Public profile
+                  </div>
+                  <h2 className="mt-2 text-xl font-semibold tracking-tight text-[#244A39]">
+                    Ready for the spotlight?
+                  </h2>
+                  <p className="mt-2 text-xs leading-5 text-[#487460]">
+                    Choose whether this profile should be publicly visible.
+                  </p>
+                </div>
 
-            <label className="flex items-center gap-3 text-sm text-[#C7CAD2]">
-              <input
-                type="checkbox"
-                checked={form.is_public}
-                onChange={(event) =>
-                  updateField(
-                    "is_public",
-                    event.target.checked,
-                  )
-                }
-                className="h-4 w-4 accent-[#A855F7]"
-              />
+                <div className="p-5 sm:p-6">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form.is_public}
+                    onClick={() => updateField("is_public", !form.is_public)}
+                    className="flex w-full items-center justify-between gap-4 text-left"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold">
+                        {form.is_public ? "Visible to everyone" : "Hidden from public"}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[#777586]">
+                        {form.is_public
+                          ? "The profile can appear on public speaker pages."
+                          : "The profile is marked as private."}
+                      </p>
+                    </div>
 
-              Publicly visible
-            </label>
-          </div>
+                    <span
+                      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+                        form.is_public ? "bg-[#287B56]" : "bg-[#D7D3CC]"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                          form.is_public ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </span>
+                  </button>
 
-          {error && (
-            <div className="mt-8 border border-red-400/20 bg-red-400/5 px-4 py-3 text-sm text-red-300">
-              {error}
-            </div>
-          )}
+                  <div className="mt-5 flex items-start gap-3 rounded-2xl bg-[#FAF9F6] p-3.5">
+                    <div
+                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                        form.is_public
+                          ? "bg-[#DDF2E5] text-[#287B56]"
+                          : "bg-[#F3F0E9] text-[#777586]"
+                      }`}
+                    >
+                      {form.is_public ? <Check size={14} /> : <Eye size={14} />}
+                    </div>
+                    <p className="text-xs leading-5 text-[#777586]">
+                      {form.is_public
+                        ? "This profile is set to public. Save your changes to apply the setting."
+                        : "This profile is set to hidden. Save your changes to apply the setting."}
+                    </p>
+                  </div>
+                </div>
+              </section>
 
-          <div className="flex justify-end pt-8">
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center gap-2 bg-[#A855F7] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#B45CFF] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Save size={16} />
-              {saving
-                ? "Saving..."
-                : mode === "create"
-                  ? "Create Speaker"
-                  : "Save Changes"}
-            </button>
+              <section className="rounded-[28px] border border-[#EEE9E0] bg-[#E5E2FF] p-5 sm:p-6">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6252BD]">
+                  Before you save
+                </p>
+                <ul className="mt-4 space-y-3 text-xs leading-5 text-[#51458F]">
+                  <li className="flex items-start gap-2">
+                    <Check size={14} className="mt-0.5 shrink-0" />
+                    <span>Make sure the speaker's name is correct.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check size={14} className="mt-0.5 shrink-0" />
+                    <span>Use a publicly accessible image URL.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check size={14} className="mt-0.5 shrink-0" />
+                    <span>Double-check social profile links.</span>
+                  </li>
+                </ul>
+              </section>
+
+              <div className="rounded-[28px] border border-[#EEE9E0] bg-white p-4">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#242333] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#6252BD] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Save size={16} />
+                  {saving
+                    ? "Saving speaker..."
+                    : mode === "create"
+                      ? "Create speaker"
+                      : "Save changes"}
+                </button>
+
+                <Link
+                  href="/dashboard/speakers"
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-[#656474] transition hover:bg-[#F3F0E9]"
+                >
+                  Cancel
+                </Link>
+              </div>
+            </aside>
           </div>
         </form>
       </div>
@@ -275,22 +417,35 @@ export function SpeakerForm({
   );
 }
 
-function FieldIntro({
+function SectionHeading({
+  number,
   title,
   description,
+  color,
 }: {
+  number: string;
   title: string;
   description: string;
+  color: "lavender" | "peach";
 }) {
-  return (
-    <div>
-      <h2 className="text-lg font-semibold">
-        {title}
-      </h2>
+  const styles = {
+    lavender: "bg-[#E5E2FF] text-[#6252BD]",
+    peach: "bg-[#FFDCCF] text-[#B95526]",
+  };
 
-      <p className="mt-2 max-w-xs text-sm leading-6 text-[#737B8C]">
-        {description}
-      </p>
+  return (
+    <div className="flex items-start gap-3">
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-semibold ${styles[color]}`}
+      >
+        {number}
+      </span>
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+        <p className="mt-1.5 text-sm leading-6 text-[#777586]">
+          {description}
+        </p>
+      </div>
     </div>
   );
 }
@@ -299,29 +454,58 @@ function Field({
   label,
   value,
   required,
+  placeholder,
   onChange,
 }: {
   label: string;
   value: string;
   required?: boolean;
+  placeholder?: string;
   onChange: (value: string) => void;
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs text-[#8F96A5]">
+      <span className="mb-2 block text-xs font-semibold text-[#656474]">
         {label}
-        {required && (
-          <span className="ml-1 text-[#A855F7]">*</span>
-        )}
+        {required && <span className="ml-1 text-[#F07832]">*</span>}
       </span>
-
       <input
+        type="text"
         required={required}
         value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
-        className="w-full border border-white/10 bg-[#0D1421] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-[#596273] focus:border-[#A855F7]"
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-2xl border border-[#EAE6DE] bg-[#FAF9F6] px-4 py-3.5 text-sm text-[#242333] outline-none transition placeholder:text-[#AAA7B3] focus:border-[#B9B0F5] focus:bg-white focus:ring-2 focus:ring-[#E5E2FF]"
+      />
+    </label>
+  );
+}
+
+function SocialField({
+  label,
+  value,
+  placeholder,
+  icon,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  icon: React.ReactNode;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-[#656474]">
+        <span className="text-[#6252BD]">{icon}</span>
+        {label}
+      </span>
+      <input
+        type="url"
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-2xl border border-[#EAE6DE] bg-[#FAF9F6] px-4 py-3.5 text-sm text-[#242333] outline-none transition placeholder:text-[#AAA7B3] focus:border-[#B9B0F5] focus:bg-white focus:ring-2 focus:ring-[#E5E2FF]"
       />
     </label>
   );
@@ -330,25 +514,25 @@ function Field({
 function TextareaField({
   label,
   value,
+  placeholder,
   onChange,
 }: {
   label: string;
   value: string;
+  placeholder?: string;
   onChange: (value: string) => void;
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs text-[#8F96A5]">
+      <span className="mb-2 block text-xs font-semibold text-[#656474]">
         {label}
       </span>
-
       <textarea
         value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
         rows={6}
-        className="w-full resize-y border border-white/10 bg-[#0D1421] px-4 py-3 text-sm leading-6 text-white outline-none transition-colors placeholder:text-[#596273] focus:border-[#A855F7]"
+        className="w-full resize-y rounded-2xl border border-[#EAE6DE] bg-[#FAF9F6] px-4 py-3.5 text-sm leading-6 text-[#242333] outline-none transition placeholder:text-[#AAA7B3] focus:border-[#B9B0F5] focus:bg-white focus:ring-2 focus:ring-[#E5E2FF]"
       />
     </label>
   );

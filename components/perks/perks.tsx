@@ -3,15 +3,14 @@ import {
   ArrowRight,
   Award,
   BookOpen,
-  BriefcaseBusiness,
   Code2,
   Globe2,
   GraduationCap,
-  Handshake,
   Lightbulb,
   Mic2,
   Trophy,
   Users,
+  Handshake
 } from "lucide-react";
 
 const learningPerks = [
@@ -19,29 +18,35 @@ const learningPerks = [
     icon: GraduationCap,
     title: "Mentorship",
     description:
-      "Guidance from experienced builders, mentors, and community leaders.",
+      "Learn from experienced builders, mentors, and community leaders who can help you find your direction.",
+    color: "bg-[#DDF2E5]",
+    iconColor: "text-[#287B56]",
   },
   {
     icon: Award,
     title: "AWS Certification",
     description:
-      "Certification preparation, learning resources, and voucher opportunities.",
+      "Explore certification preparation, learning resources, and voucher opportunities when available.",
+    color: "bg-[#FFE3D3]",
+    iconColor: "text-[#D45B2A]",
   },
   {
     icon: BookOpen,
     title: "Mock Exams",
     description:
-      "Practice and prepare with certification-focused mock assessments.",
+      "Practice your knowledge with certification-focused mock assessments and learn at your own pace.",
+    color: "bg-[#E5E2FF]",
+    iconColor: "text-[#6252BD]",
   },
 ];
 
 const buildPerks = [
-  "Hackathons",
-  "Build challenges",
-  "Open source",
-  "Project guidance",
-  "Technical workshops",
-  "Speaking opportunities",
+  { label: "Hackathons", icon: Trophy, color: "bg-[#FFE5A5]" },
+  { label: "Build challenges", icon: Lightbulb, color: "bg-[#E5E2FF]" },
+  { label: "Open source", icon: Code2, color: "bg-[#DDF2E5]" },
+  { label: "Project guidance", icon: GraduationCap, color: "bg-[#FFDCCF]" },
+  { label: "Technical workshops", icon: BookOpen, color: "bg-[#DCEBFF]" },
+  { label: "Speaking opportunities", icon: Mic2, color: "bg-[#F9DDF0]" },
 ];
 
 const growthPerks = [
@@ -55,147 +60,198 @@ const growthPerks = [
 
 export function Perks() {
   return (
-    <main className="overflow-hidden bg-[#111827]">
-      <section className="relative">
-        <div className="mx-auto max-w-360 px-5 pb-28 pt-16 sm:px-8 sm:pb-36 sm:pt-32 lg:px-10 lg:pb-44 lg:pt-10">
-          <div className="max-w-6xl">
-            <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#8F96A5]">
-              Member perks
-            </p>
+    <main className="overflow-hidden bg-[#FAF9F6] text-[#242333]">
+      <section className="px-5 pb-14 pt-10 sm:px-8 sm:pb-16 sm:pt-14 lg:px-10">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
+          <div>
 
-            <h1 className="mt-8 text-[clamp(4rem,10vw,9rem)] font-semibold leading-[0.84] tracking-[-0.075em] text-white">
-              Be part of
+            <h1 className="mt-7 max-w-3xl text-[clamp(3.5rem,8vw,7rem)] font-semibold leading-[0.88] tracking-[-0.075em]">
+              More than
               <br />
-              something
-              <br />
-              <span className="text-[#A855F7]">bigger.</span>
+              just a <span className="text-[#F07832]">club.</span>
             </h1>
 
-            <p className="mt-12 max-w-xl text-base leading-7 text-[#858C9B] sm:text-lg">
-              SBG is more than a place to attend events. It is a community
-              where knowledge, people, opportunities, and ideas come together.
+            <p className="mt-6 max-w-xl text-base leading-7 text-[#656474] sm:text-lg sm:leading-8">
+              A place to learn new skills, build real things, meet your people,
+              and discover what you can do. Your next opportunity might start
+              with a conversation here.
+            </p>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link
+                href="/auth/login"
+                className="group inline-flex items-center gap-3 rounded-full bg-[#242333] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#F07832]"
+              >
+                Find your people
+                <ArrowRight
+                  size={16}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+
+              <span className="text-sm text-[#777584]">
+                Learn something. Build something.
+              </span>
+            </div>
+          </div>
+
+          <div className="relative mx-auto flex min-h-[330px] w-full max-w-lg items-center justify-center sm:min-h-[390px]">
+            <div className="absolute left-[10%] top-[12%] h-24 w-24 rotate-[-12deg] rounded-[2rem] bg-[#FFE5A5] sm:h-28 sm:w-28" />
+            <div className="absolute right-[8%] top-[8%] h-20 w-20 rounded-full bg-[#DCEBFF] sm:h-24 sm:w-24" />
+            <div className="absolute bottom-[8%] left-[12%] h-24 w-24 rounded-full bg-[#DDF2E5] sm:h-28 sm:w-28" />
+            <div className="absolute bottom-[12%] right-[9%] h-24 w-24 rotate-12 rounded-[2rem] bg-[#F9DDF0] sm:h-28 sm:w-28" />
+
+            <div className="relative z-10 flex h-64 w-64 rotate-[-4deg] flex-col justify-between rounded-[2.5rem] bg-[#E5E2FF] p-6 shadow-[0_16px_50px_rgba(36,35,51,0.08)] sm:h-72 sm:w-72 sm:p-8">
+              <div className="flex items-start justify-between">
+                <span className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold">
+                  AWS SBG · LPU
+                </span>
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#6252BD] text-white">
+                  <Lightbulb size={23} />
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-[#6252BD]">
+                  Curiosity looks good on you.
+                </p>
+                <h2 className="mt-3 text-4xl font-semibold leading-[0.95] tracking-[-0.06em] sm:text-5xl">
+                  Learn.
+                  <br />
+                  Build.
+                  <br />
+                  <span className="text-[#6252BD]">Belong.</span>
+                </h2>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#6252BD]">
+                  Your next chapter starts here
+                </span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#6252BD]">
+                  <ArrowRight size={17} />
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute right-[2%] top-[38%] z-20 flex h-14 w-14 rotate-12 items-center justify-center rounded-2xl bg-[#F07832] text-white shadow-lg sm:right-[4%]">
+              <Code2 size={25} />
+            </div>
+
+            <div className="absolute bottom-[5%] left-[6%] z-20 flex h-12 w-12 -rotate-12 items-center justify-center rounded-full bg-[#242333] text-[#FFE5A5] sm:left-[8%]">
+              <Users size={22} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 py-10 sm:px-8 sm:py-12 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-7 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-sm font-semibold text-[#F07832]">
+                First things first
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.055em] sm:text-4xl">
+                Get better at your craft.
+              </h2>
+            </div>
+
+            <p className="max-w-md text-sm leading-6 text-[#656474]">
+              You don&apos;t need to know everything before you start. You just
+              need room to learn and people to learn with.
             </p>
           </div>
 
-          <div className="mt-20 flex items-center gap-4 text-[#626A7A]">
-            <span className="h-px w-12 bg-[#626A7A]" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em]">
-              01 / Learn
-            </span>
-          </div>
-        </div>
-      </section>
+          <div className="grid gap-4 md:grid-cols-3">
+            {learningPerks.map((perk) => {
+              const Icon = perk.icon;
 
-      <section className="border-y border-white/[0.08]">
-        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
-          <div className="grid gap-16 lg:grid-cols-[0.7fr_1.3fr] lg:gap-28">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
-                Learn
-              </p>
-
-              <h2 className="mt-5 max-w-md text-4xl font-semibold leading-[1] tracking-[-0.045em] text-white sm:text-5xl">
-                Keep learning.
-                <br />
-                Keep getting better.
-              </h2>
-            </div>
-
-            <div className="divide-y divide-white/[0.08]">
-              {learningPerks.map((perk) => {
-                const Icon = perk.icon;
-
-                return (
+              return (
+                <article
+                  key={perk.title}
+                  className={`${perk.color} flex min-h-[220px] flex-col rounded-[1.75rem] p-6 transition-transform duration-200 hover:-translate-y-1 sm:p-7`}
+                >
                   <div
-                    key={perk.title}
-                    className="group flex gap-6 py-7 first:pt-0 last:pb-0"
+                    className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 ${perk.iconColor}`}
                   >
-                    <div className="mt-1 shrink-0 text-[#A855F7]">
-                      <Icon size={22} strokeWidth={1.6} />
-                    </div>
-
-                    <div>
-                      <h3 className="text-xl font-medium tracking-[-0.02em] text-white">
-                        {perk.title}
-                      </h3>
-
-                      <p className="mt-2 max-w-xl text-sm leading-6 text-[#858C9B]">
-                        {perk.description}
-                      </p>
-                    </div>
+                    <Icon size={23} strokeWidth={1.8} />
                   </div>
-                );
-              })}
-            </div>
+
+                  <div className="mt-8">
+                    <h3 className="text-xl font-semibold tracking-tight">
+                      {perk.title}
+                    </h3>
+                    <p className="mt-2 max-w-sm text-sm leading-6 text-[#555466]">
+                      {perk.description}
+                    </p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
+
+          <p className="mt-4 text-xs leading-5 text-[#777584]">
+            Certification vouchers and other benefits depend on program
+            eligibility and availability.
+          </p>
         </div>
       </section>
 
-      <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-360 px-5 py-28 sm:px-8 sm:py-36 lg:px-10 lg:py-44">
-          <div className="grid items-center gap-16 lg:grid-cols-[1.15fr_0.85fr] lg:gap-24">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
-                Global connections
+      <section className="px-5 py-10 sm:px-8 sm:py-12 lg:px-10">
+        <div className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="relative overflow-hidden rounded-[2rem] bg-[#FFE5A5] p-7 sm:p-9">
+            <div className="relative z-10">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 text-[#A56A00]">
+                <Globe2 size={23} />
+              </div>
+
+              <p className="mt-7 text-sm font-semibold text-[#A56A00]">
+                Beyond the classroom
               </p>
 
-              <h2 className="mt-7 max-w-4xl text-5xl font-semibold leading-[0.95] tracking-[-0.06em] text-white sm:text-6xl lg:text-7xl">
-                Your campus
-                <br />
-                is only the
-                <br />
-                <span className="text-[#A855F7]">beginning.</span>
+              <h2 className="mt-3 max-w-lg text-4xl font-semibold leading-[0.98] tracking-[-0.06em] sm:text-5xl">
+                Your campus is only the beginning.
               </h2>
 
-              <p className="mt-8 max-w-xl text-base leading-7 text-[#858C9B]">
-                Connect with students, developers, mentors, speakers, and AWS
-                communities beyond LPU. The people you meet can become
-                collaborators, mentors, teammates, and friends.
+              <p className="mt-5 max-w-lg text-sm leading-6 text-[#66532C] sm:text-base sm:leading-7">
+                Meet students, developers, mentors, and speakers. Share what
+                you&apos;re learning, discover new perspectives, and find
+                collaborators for what comes next.
               </p>
             </div>
 
-            <div className="relative flex aspect-square max-w-[420px] items-center justify-center lg:ml-auto">
-              <div className="absolute inset-[12%] rounded-full border border-white/[0.1]" />
-              <div className="absolute inset-[25%] rounded-full border border-[#A855F7]/30" />
-              <div className="absolute inset-[38%] rounded-full bg-[#A855F7]" />
-
-              <div className="absolute left-[4%] top-[22%] flex h-12 w-12 items-center justify-center border border-white/[0.1] bg-[#111827] text-[#A855F7]">
-                <Globe2 size={19} />
-              </div>
-
-              <div className="absolute bottom-[18%] right-[8%] flex h-12 w-12 items-center justify-center border border-white/[0.1] bg-[#111827] text-[#A855F7]">
-                <Users size={19} />
-              </div>
-
-              <div className="absolute right-[4%] top-[15%] h-2 w-2 bg-[#A855F7]" />
-              <div className="absolute bottom-[8%] left-[22%] h-2 w-2 bg-white/30" />
-            </div>
+            <div className="absolute -bottom-14 -right-10 h-48 w-48 rounded-full border-[28px] border-white/30" />
+            <div className="absolute right-[22%] top-[10%] h-3 w-3 rounded-full bg-[#F07832]" />
           </div>
-        </div>
-      </section>
 
-      <section className="border-y border-white/[0.08]">
-        <div className="mx-auto max-w-360 px-5 py-24 sm:px-8 sm:py-32 lg:px-10 lg:py-40">
-          <div className="grid gap-14 lg:grid-cols-[0.65fr_1.35fr] lg:gap-24">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
-                Build
-              </p>
-
-              <h2 className="mt-5 text-4xl font-semibold leading-[1] tracking-[-0.045em] text-white sm:text-5xl">
-                Make things
-                <br />
-                that matter.
-              </h2>
+          <div className="rounded-[2rem] bg-[#242333] p-7 text-white sm:p-9">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#DDF2E5] text-[#287B56]">
+              <Code2 size={23} />
             </div>
 
-            <div className="flex flex-wrap content-start gap-x-10 gap-y-5">
+            <p className="mt-7 text-sm font-semibold text-[#B8B3FF]">
+              Make it real
+            </p>
+
+            <h2 className="mt-3 max-w-lg text-4xl font-semibold leading-[0.98] tracking-[-0.06em] sm:text-5xl">
+              Ideas are great. Built things are better.
+            </h2>
+
+            <p className="mt-5 max-w-lg text-sm leading-6 text-white/70 sm:text-base sm:leading-7">
+              Turn curiosity into hands-on experience through hackathons,
+              open-source contributions, build challenges, and practical
+              workshops.
+            </p>
+
+            <div className="mt-7 flex flex-wrap gap-2">
               {buildPerks.map((perk) => (
                 <span
-                  key={perk}
-                  className="text-2xl font-medium tracking-tight text-[#C7CAD2] transition-colors hover:text-[#A855F7] sm:text-3xl"
+                  key={perk.label}
+                  className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-[#242333] ${perk.color}`}
                 >
-                  {perk}
+                  <perk.icon size={14} />
+                  {perk.label}
                 </span>
               ))}
             </div>
@@ -203,75 +259,100 @@ export function Perks() {
         </div>
       </section>
 
-      <section>
-        <div className="mx-auto max-w-360 px-5 py-28 sm:px-8 sm:py-36 lg:px-10 lg:py-44">
-          <div className="grid gap-16 lg:grid-cols-[1fr_1fr] lg:gap-24">
+      <section className="px-5 py-10 sm:px-8 sm:py-12 lg:px-10">
+        <div className="mx-auto max-w-7xl rounded-[2rem] bg-[#DCEBFF] p-7 sm:p-10">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#A855F7]">
-                Grow
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 text-[#3B5FA3]">
+                <Trophy size={23} />
+              </div>
+
+              <p className="mt-6 text-sm font-semibold text-[#3B5FA3]">
+                Your journey, your way
               </p>
 
-              <h2 className="mt-6 max-w-xl text-5xl font-semibold leading-[0.95] tracking-[-0.06em] text-white sm:text-6xl">
-                Build your
-                <br />
-                own path.
+              <h2 className="mt-3 max-w-md text-4xl font-semibold leading-[0.98] tracking-[-0.06em] sm:text-5xl">
+                Grow into the builder you want to be.
               </h2>
+
+              <p className="mt-4 max-w-md text-sm leading-6 text-[#455875] sm:text-base sm:leading-7">
+                Take initiative, share your work, learn from others, and find
+                opportunities to contribute. There&apos;s no single path to
+                growth.
+              </p>
             </div>
 
-            <div>
-              <div className="flex flex-wrap gap-x-8 gap-y-5">
-                {growthPerks.map((perk) => (
-                  <span
-                    key={perk}
-                    className="text-lg text-[#858C9B] transition-colors hover:text-white"
-                  >
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {growthPerks.map((perk, index) => (
+                <div
+                  key={perk}
+                  className={`flex min-h-28 flex-col justify-between rounded-2xl p-4 sm:min-h-32 sm:p-5 ${
+                    [
+                      "bg-white/80",
+                      "bg-[#FFE5A5]",
+                      "bg-[#DDF2E5]",
+                      "bg-[#F9DDF0]",
+                      "bg-white/80",
+                      "bg-[#FFE3D3]",
+                    ][index]
+                  }`}
+                >
+                  <span className="text-xs font-semibold text-[#777584]">
+                    0{index + 1}
+                  </span>
+                  <span className="text-base font-semibold leading-tight tracking-tight text-[#242333] sm:text-lg">
                     {perk}
                   </span>
-                ))}
-              </div>
-
-              <div className="mt-14 border-t border-white/[0.08] pt-8">
-                <p className="max-w-lg text-sm leading-6 text-[#626A7A]">
-                  Opportunities can vary by program, eligibility, availability,
-                  and participation. What remains constant is the community
-                  around you.
-                </p>
-              </div>
+                </div>
+              ))}
             </div>
+          </div>
+
+          <div className="mt-6 flex items-start gap-3 border-t border-[#3B5FA3]/15 pt-5 text-sm leading-6 text-[#455875]">
+            <Handshake size={19} className="mt-0.5 shrink-0" />
+            <p>
+              Some opportunities depend on program eligibility, availability,
+              and participation. The community is here to help you keep moving
+              forward.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="px-5 pb-10 sm:px-8 lg:px-10">
-        <div className="mx-auto max-w-360">
-          <div className="relative overflow-hidden bg-[#A855F7] px-7 py-16 sm:px-12 lg:px-16 lg:py-20">
-            <div className="relative z-10 flex flex-col justify-between gap-10 md:flex-row md:items-end">
-              <div>
-                <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#111827]/60">
-                  Ready to build?
-                </p>
-
-                <h2 className="mt-5 max-w-2xl text-4xl font-semibold leading-none tracking-[-0.05em] text-[#111827] sm:text-5xl lg:text-6xl">
-                  Find your people.
-                  <br />
-                  Start building.
-                </h2>
+      <section className="px-5 pb-10 pt-6 sm:px-8 lg:px-10">
+        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#F07832] px-7 py-10 sm:px-10 sm:py-12 lg:px-12">
+          <div className="relative z-10 flex flex-col justify-between gap-7 md:flex-row md:items-end">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/25 px-3 py-1.5 text-xs font-semibold text-[#542B1A]">
+                <span className="h-2 w-2 rounded-full bg-[#542B1A]" />
+                Your next chapter
               </div>
 
-              <Link
-                href="/auth/login"
-                className="group inline-flex shrink-0 items-center gap-3 bg-[#111827] px-6 py-4 text-sm font-medium text-white transition-colors hover:bg-[#172033]"
-              >
-                Join SBG
-                <ArrowRight
-                  size={16}
-                  className="transition-transform group-hover:translate-x-1"
-                />
-              </Link>
+              <h2 className="mt-5 max-w-2xl text-4xl font-semibold leading-[0.95] tracking-[-0.065em] text-[#242333] sm:text-5xl lg:text-6xl">
+                Find your people.
+                <br />
+                Make something matter.
+              </h2>
+
+              <p className="mt-4 max-w-lg text-sm leading-6 text-[#542B1A] sm:text-base">
+                Bring your curiosity. We&apos;ll figure out the rest together.
+              </p>
             </div>
 
-            <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full border-[40px] border-[#111827]/10" />
+            <Link
+              href="/auth/login"
+              className="group inline-flex shrink-0 items-center justify-center gap-3 self-start rounded-full bg-[#242333] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white hover:text-[#242333] md:self-auto"
+            >
+              Join SBG
+              <ArrowRight
+                size={16}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </Link>
           </div>
+
+          <div className="absolute -right-12 -top-20 h-52 w-52 rounded-full border-[30px] border-white/20" />
+          <div className="absolute bottom-[-35px] right-[28%] h-20 w-20 rotate-12 rounded-3xl bg-[#FFE5A5]" />
         </div>
       </section>
     </main>
