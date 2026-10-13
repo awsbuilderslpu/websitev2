@@ -72,6 +72,14 @@ const adminItems = [
     color: "#DCEBFF",
     iconColor: "#345DA8",
   },
+  {
+    title: "Teams",
+    description: "Manage teams, assign members, and update designations.",
+    href: "/dashboard/teams",
+    icon: Cloud,
+    color: "#F9DDF0",
+    iconColor: "#A63D79",
+  },
 ];
 
 const personalItems = [

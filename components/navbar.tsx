@@ -26,7 +26,7 @@ const navigation = [
   { label: "Events", href: "/events" },
   { label: "Perks", href: "/perks" },
   { label: "Speakers", href: "/speakers" },
-  { label: "Community", href: "/community" },
+  { label: "Teams", href: "/teams" },
 ];
 
 type AuthUser = {
