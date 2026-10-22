@@ -7,6 +7,24 @@
     "nodejs_compat",
     "global_fetch_strictly_public"
   ],
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://awslpu.in",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://waojdmpxtvahpwyqrfgz.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_FDcDfifsbIjeFDRfiJjpQQ_qMWd5I94",
+    "SSO_AUTHORIZE_URL": "https://sso.awslpu.in/authorize",
+    "SSO_CLIENT_ID": "sso_9Kx7Vq2Lm8Rz4Np6Tc1Yw5Hs3Df0Ba",
+    "SSO_ISSUER": "https://sso.awslpu.in",
+    "SSO_JWKS_URL": "https://sso.awslpu.in/oauth/jwks",
+    "SSO_REDIRECT_URI": "https://awslpu.in/auth/callback",
+    "SSO_TOKEN_URL": "https://sso.awslpu.in/oauth/token",
+    "SSO_USERINFO_URL": "https://sso.awslpu.in/oauth/userinfo"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
@@ -14,14 +32,12 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "awsbuilderlpu",
-      "environment": "production"
+      "service": "awsbuilderlpu"
     }
   ],
   "images": {
     "binding": "IMAGES"
   },
-  "preview_urls": false,
   "routes": [
     {
       "pattern": "awslpu.in",

@@ -8,28 +8,45 @@ function normalizeBaseUrl(value: string) {
   return value.replace(/\/+$/, "");
 }
 
+function normalizeEndpoint(
+  value: string | undefined,
+  fallback: string,
+) {
+  const endpoint = (value ?? fallback).trim();
+  const url = new URL(endpoint);
+
+  if (url.protocol !== "https:" && url.hostname !== "localhost") {
+    throw new Error("SSO endpoints must use HTTPS");
+  }
+
+  return url.toString();
+}
+
 const issuerBase = normalizeBaseUrl(
-  process.env.SSO_ISSUER ??
-    "https://sso.awslpu.in/",
+  process.env.SSO_ISSUER ?? "https://sso.awslpu.in",
 );
 
-const issuer = `${issuerBase}/`;
+const issuer = issuerBase;
 
-const authorizeUrl =
-  process.env.SSO_AUTHORIZE_URL ??
-  `${issuerBase}/authorize`;
+const authorizeUrl = normalizeEndpoint(
+  process.env.SSO_AUTHORIZE_URL,
+  `${issuerBase}/authorize`,
+);
 
-const tokenUrl =
-  process.env.SSO_TOKEN_URL ??
-  `${issuerBase}/oauth/token`;
+const tokenUrl = normalizeEndpoint(
+  process.env.SSO_TOKEN_URL,
+  `${issuerBase}/oauth/token`,
+);
 
-const userinfoUrl =
-  process.env.SSO_USERINFO_URL ??
-  `${issuerBase}/oauth/userinfo`;
+const userinfoUrl = normalizeEndpoint(
+  process.env.SSO_USERINFO_URL,
+  `${issuerBase}/oauth/userinfo`,
+);
 
-const jwksUrl =
-  process.env.SSO_JWKS_URL ??
-  `${issuerBase}/oauth/jwks`;
+const jwksUrl = normalizeEndpoint(
+  process.env.SSO_JWKS_URL,
+  `${issuerBase}/oauth/jwks`,
+);
 
 const clientId = process.env.SSO_CLIENT_ID;
 const clientSecret = process.env.SSO_CLIENT_SECRET;
@@ -46,6 +63,10 @@ if (!redirectUri) {
 
 if (!sessionSecret) {
   throw new Error("SSO_SESSION_SECRET is not configured");
+}
+
+if (sessionSecret.length < 32) {
+  throw new Error("SSO_SESSION_SECRET must be at least 32 characters");
 }
 
 const config = {
@@ -77,6 +98,50 @@ export type AuthUser = {
   picture: string | null;
   role: SsoRole;
 };
+
+async function fetchWithDiagnostics(
+  label: string,
+  url: string,
+  init?: RequestInit,
+): Promise<Response> {
+  console.info(`[SSO] ${label}: starting`, {
+    url,
+    method: init?.method ?? "GET",
+  });
+
+  try {
+    const response = await fetch(url, init);
+
+    console.info(`[SSO] ${label}: response`, {
+      status: response.status,
+      redirected: response.redirected,
+      url: response.url,
+    });
+
+    return response;
+  } catch (error) {
+    console.error(`[SSO] ${label}: fetch failed`, {
+      name:
+        error instanceof Error
+          ? error.name
+          : "UnknownError",
+      message:
+        error instanceof Error
+          ? error.message
+          : String(error),
+      cause:
+        error instanceof Error
+          ? error.cause instanceof Error
+            ? error.cause.message
+            : error.cause === undefined
+              ? undefined
+              : String(error.cause)
+          : undefined,
+    });
+
+    throw error;
+  }
+}
 
 export function getSSOConfig() {
   return {
@@ -131,49 +196,100 @@ export async function verifyIdToken(
   idToken: string,
   nonce: string,
 ) {
-  const { payload } = await jwtVerify(
-    idToken,
-    jwks,
-    {
-      issuer: config.issuer,
-      audience: config.clientId,
-      algorithms: ["RS256"],
-    },
-  );
+  console.info("[SSO] ID token verification: starting");
 
-  if (!payload.sub) {
-    throw new Error("ID token does not contain a subject");
+  try {
+    const { payload } = await jwtVerify(
+      idToken,
+      jwks,
+      {
+        issuer: config.issuer,
+        audience: config.clientId,
+        algorithms: ["RS256"],
+      },
+    );
+
+    if (!payload.sub) {
+      throw new Error(
+        "ID token does not contain a subject",
+      );
+    }
+
+    if (payload.nonce !== nonce) {
+      throw new Error("Invalid ID token nonce");
+    }
+
+    console.info("[SSO] ID token verification: successful");
+
+    return payload;
+  } catch (error) {
+    console.error("[SSO] ID token verification failed", {
+      name:
+        error instanceof Error
+          ? error.name
+          : "UnknownError",
+      message:
+        error instanceof Error
+          ? error.message
+          : String(error),
+    });
+
+    throw error;
   }
-
-  if (payload.nonce !== nonce) {
-    throw new Error("Invalid ID token nonce");
-  }
-
-  return payload;
 }
 
 export async function fetchUserInfo(
   accessToken: string,
   expectedSub: string,
 ) {
-  const response = await fetch(config.userinfoUrl, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
+  const response = await fetchWithDiagnostics(
+    "userinfo",
+    config.userinfoUrl,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      cache: "no-store",
+      redirect: "manual",
     },
-    cache: "no-store",
-    redirect: "error",
-  });
+  );
+
+  if (response.status >= 300 && response.status < 400) {
+    console.error("[SSO] Userinfo endpoint redirected", {
+      status: response.status,
+      location: response.headers.get("location"),
+    });
+
+    throw new Error(
+      `SSO userinfo endpoint returned HTTP ${response.status} redirect`,
+    );
+  }
 
   if (!response.ok) {
+    const responseText = await response.text();
+
+    console.error("[SSO] Userinfo request failed", {
+      status: response.status,
+      response: responseText.slice(0, 1000),
+    });
+
     throw new Error(
       `Failed to fetch userinfo: HTTP ${response.status}`,
     );
   }
 
-  const userinfo = await response.json();
+  const userinfo = await response.json() as Record<
+    string,
+    unknown
+  >;
 
-  if (!userinfo.sub) {
-    throw new Error("Userinfo does not contain a subject");
+  if (
+    typeof userinfo.sub !== "string" ||
+    !userinfo.sub
+  ) {
+    throw new Error(
+      "Userinfo does not contain a subject",
+    );
   }
 
   if (userinfo.sub !== expectedSub) {
@@ -199,11 +315,19 @@ export function buildAuthUser(
   idToken: Record<string, unknown>,
   userinfo: Record<string, unknown>,
 ): AuthUser {
+  const sub = userinfo.sub ?? idToken.sub;
+
+  if (typeof sub !== "string" || !sub) {
+    throw new Error(
+      "Cannot build authenticated user without a subject",
+    );
+  }
+
   const role =
     userinfo.role ?? idToken.role ?? "member";
 
   return {
-    sub: String(userinfo.sub ?? idToken.sub),
+    sub,
     name:
       typeof userinfo.name === "string"
         ? userinfo.name
@@ -243,7 +367,9 @@ export async function verifySession(token: string) {
   );
 
   if (!payload.sub) {
-    throw new Error("Session does not contain a subject");
+    throw new Error(
+      "Session does not contain a subject",
+    );
   }
 
   return {
@@ -278,11 +404,20 @@ export function buildAuthorizationUrl({
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("redirect_uri", config.redirectUri);
-  url.searchParams.set("scope", "openid profile email");
+  url.searchParams.set(
+    "scope",
+    "openid profile email",
+  );
   url.searchParams.set("state", state);
   url.searchParams.set("nonce", nonce);
-  url.searchParams.set("code_challenge", codeChallenge);
-  url.searchParams.set("code_challenge_method", "S256");
+  url.searchParams.set(
+    "code_challenge",
+    codeChallenge,
+  );
+  url.searchParams.set(
+    "code_challenge_method",
+    "S256",
+  );
 
   return url;
 }
@@ -292,7 +427,9 @@ export async function exchangeCode(
   codeVerifier: string,
 ) {
   if (!config.clientSecret) {
-    throw new Error("SSO_CLIENT_SECRET is not configured");
+    throw new Error(
+      "SSO_CLIENT_SECRET is not configured",
+    );
   }
 
   const credentials = Buffer.from(
@@ -306,21 +443,43 @@ export async function exchangeCode(
   body.set("redirect_uri", config.redirectUri);
   body.set("code_verifier", codeVerifier);
 
-  const response = await fetch(config.tokenUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${credentials}`,
-      "Content-Type": "application/x-www-form-urlencoded",
+  const response = await fetchWithDiagnostics(
+    "token exchange",
+    config.tokenUrl,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        "Content-Type":
+          "application/x-www-form-urlencoded",
+      },
+      body,
+      cache: "no-store",
+      redirect: "manual",
     },
-    body,
-    cache: "no-store",
-    redirect: "error",
-  });
+  );
+
+  if (response.status >= 300 && response.status < 400) {
+    console.error(
+      "[SSO] Token endpoint redirected",
+      {
+        status: response.status,
+        location: response.headers.get("location"),
+      },
+    );
+
+    throw new Error(
+      `SSO token endpoint returned HTTP ${response.status} redirect`,
+    );
+  }
 
   if (!response.ok) {
-    const text = await response.text();
+    const responseText = await response.text();
 
-    console.error("SSO token exchange failed:", text);
+    console.error("[SSO] Token exchange failed", {
+      status: response.status,
+      response: responseText.slice(0, 1000),
+    });
 
     throw new Error(
       `Failed to exchange authorization code: HTTP ${response.status}`,
