@@ -157,7 +157,9 @@ export async function GET(
     cookieStore.delete("sso_next");
 
     const safeNext =
-      next.startsWith("/") ? next : "/";
+    next.startsWith("/") && !next.startsWith("//")
+      ? next
+      : "/dashboard";
 
     const redirectUrl =
       new URL(

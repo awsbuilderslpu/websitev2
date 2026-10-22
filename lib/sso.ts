@@ -4,24 +4,32 @@ import {
   SignJWT,
 } from "jose";
 
-const issuer =
-  process.env.SSO_ISSUER ?? "https://sso.awslpu.in";
+function normalizeBaseUrl(value: string) {
+  return value.replace(/\/+$/, "");
+}
+
+const issuerBase = normalizeBaseUrl(
+  process.env.SSO_ISSUER ??
+    "https://sso.awslpu.in/",
+);
+
+const issuer = `${issuerBase}/`;
 
 const authorizeUrl =
   process.env.SSO_AUTHORIZE_URL ??
-  "https://sso.awslpu.in/authorize";
+  `${issuerBase}/authorize`;
 
 const tokenUrl =
   process.env.SSO_TOKEN_URL ??
-  "https://sso.awslpu.in/oauth/token";
+  `${issuerBase}/oauth/token`;
 
 const userinfoUrl =
   process.env.SSO_USERINFO_URL ??
-  "https://sso.awslpu.in/oauth/userinfo";
+  `${issuerBase}/oauth/userinfo`;
 
 const jwksUrl =
   process.env.SSO_JWKS_URL ??
-  "https://sso.awslpu.in/oauth/jwks";
+  `${issuerBase}/oauth/jwks`;
 
 const clientId = process.env.SSO_CLIENT_ID;
 const clientSecret = process.env.SSO_CLIENT_SECRET;
@@ -37,9 +45,7 @@ if (!redirectUri) {
 }
 
 if (!sessionSecret) {
-  throw new Error(
-    "SSO_SESSION_SECRET is not configured",
-  );
+  throw new Error("SSO_SESSION_SECRET is not configured");
 }
 
 const config = {
@@ -62,10 +68,7 @@ const jwks = createRemoteJWKSet(
   new URL(config.jwksUrl),
 );
 
-export type SsoRole =
-  | "member"
-  | "core"
-  | "admin";
+export type SsoRole = "member" | "core" | "admin";
 
 export type AuthUser = {
   sub: string;
@@ -89,20 +92,12 @@ export function getSSOConfig() {
 
 function randomBytes(length: number) {
   const bytes = new Uint8Array(length);
-
   crypto.getRandomValues(bytes);
-
   return bytes;
 }
 
-function base64UrlEncode(bytes: Uint8Array) {
-  let binary = "";
-
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-
-  return Buffer.from(binary, "binary")
+function base64UrlEncode(bytes: Uint8Array): string {
+  return Buffer.from(bytes)
     .toString("base64")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
@@ -129,9 +124,7 @@ export async function generateCodeChallenge(
     new TextEncoder().encode(verifier),
   );
 
-  return base64UrlEncode(
-    new Uint8Array(digest),
-  );
+  return base64UrlEncode(new Uint8Array(digest));
 }
 
 export async function verifyIdToken(
@@ -144,19 +137,16 @@ export async function verifyIdToken(
     {
       issuer: config.issuer,
       audience: config.clientId,
+      algorithms: ["RS256"],
     },
   );
 
   if (!payload.sub) {
-    throw new Error(
-      "ID token does not contain a subject",
-    );
+    throw new Error("ID token does not contain a subject");
   }
 
   if (payload.nonce !== nonce) {
-    throw new Error(
-      "Invalid ID token nonce",
-    );
+    throw new Error("Invalid ID token nonce");
   }
 
   return payload;
@@ -166,42 +156,34 @@ export async function fetchUserInfo(
   accessToken: string,
   expectedSub: string,
 ) {
-  const response = await fetch(
-    config.userinfoUrl,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      cache: "no-store",
+  const response = await fetch(config.userinfoUrl, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+    cache: "no-store",
+    redirect: "error",
+  });
 
   if (!response.ok) {
     throw new Error(
-      "Failed to fetch userinfo",
+      `Failed to fetch userinfo: HTTP ${response.status}`,
     );
   }
 
   const userinfo = await response.json();
 
   if (!userinfo.sub) {
-    throw new Error(
-      "Userinfo does not contain a subject",
-    );
+    throw new Error("Userinfo does not contain a subject");
   }
 
   if (userinfo.sub !== expectedSub) {
-    throw new Error(
-      "Userinfo subject mismatch",
-    );
+    throw new Error("Userinfo subject mismatch");
   }
 
   return userinfo;
 }
 
-function normalizeRole(
-  value: unknown,
-): SsoRole {
+function normalizeRole(value: unknown): SsoRole {
   if (
     value === "admin" ||
     value === "core" ||
@@ -218,19 +200,14 @@ export function buildAuthUser(
   userinfo: Record<string, unknown>,
 ): AuthUser {
   const role =
-    userinfo.role ??
-    idToken.role ??
-    "member";
+    userinfo.role ?? idToken.role ?? "member";
 
   return {
-    sub: String(
-      userinfo.sub ?? idToken.sub,
-    ),
+    sub: String(userinfo.sub ?? idToken.sub),
     name:
       typeof userinfo.name === "string"
         ? userinfo.name
-        : typeof userinfo.preferred_username ===
-            "string"
+        : typeof userinfo.preferred_username === "string"
           ? userinfo.preferred_username
           : null,
     email:
@@ -245,9 +222,7 @@ export function buildAuthUser(
   };
 }
 
-export async function createSession(
-  user: AuthUser,
-) {
+export async function createSession(user: AuthUser) {
   return new SignJWT(user)
     .setProtectedHeader({
       alg: "HS256",
@@ -258,9 +233,7 @@ export async function createSession(
     .sign(sessionKey);
 }
 
-export async function verifySession(
-  token: string,
-) {
+export async function verifySession(token: string) {
   const { payload } = await jwtVerify(
     token,
     sessionKey,
@@ -270,9 +243,7 @@ export async function verifySession(
   );
 
   if (!payload.sub) {
-    throw new Error(
-      "Session does not contain a subject",
-    );
+    throw new Error("Session does not contain a subject");
   }
 
   return {
@@ -302,49 +273,16 @@ export function buildAuthorizationUrl({
   nonce: string;
   codeChallenge: string;
 }) {
-  const url = new URL(
-    config.authorizeUrl,
-  );
+  const url = new URL(config.authorizeUrl);
 
-  url.searchParams.set(
-    "response_type",
-    "code",
-  );
-
-  url.searchParams.set(
-    "client_id",
-    config.clientId,
-  );
-
-  url.searchParams.set(
-    "redirect_uri",
-    config.redirectUri,
-  );
-
-  url.searchParams.set(
-    "scope",
-    "openid profile email",
-  );
-
-  url.searchParams.set(
-    "state",
-    state,
-  );
-
-  url.searchParams.set(
-    "nonce",
-    nonce,
-  );
-
-  url.searchParams.set(
-    "code_challenge",
-    codeChallenge,
-  );
-
-  url.searchParams.set(
-    "code_challenge_method",
-    "S256",
-  );
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("client_id", config.clientId);
+  url.searchParams.set("redirect_uri", config.redirectUri);
+  url.searchParams.set("scope", "openid profile email");
+  url.searchParams.set("state", state);
+  url.searchParams.set("nonce", nonce);
+  url.searchParams.set("code_challenge", codeChallenge);
+  url.searchParams.set("code_challenge_method", "S256");
 
   return url;
 }
@@ -354,9 +292,7 @@ export async function exchangeCode(
   codeVerifier: string,
 ) {
   if (!config.clientSecret) {
-    throw new Error(
-      "SSO_CLIENT_SECRET is not configured",
-    );
+    throw new Error("SSO_CLIENT_SECRET is not configured");
   }
 
   const credentials = Buffer.from(
@@ -365,53 +301,31 @@ export async function exchangeCode(
 
   const body = new URLSearchParams();
 
-  body.set(
-    "grant_type",
-    "authorization_code",
-  );
+  body.set("grant_type", "authorization_code");
+  body.set("code", code);
+  body.set("redirect_uri", config.redirectUri);
+  body.set("code_verifier", codeVerifier);
 
-  body.set(
-    "code",
-    code,
-  );
-
-  body.set(
-    "redirect_uri",
-    config.redirectUri,
-  );
-
-  body.set(
-    "code_verifier",
-    codeVerifier,
-  );
-
-  const response = await fetch(
-    config.tokenUrl,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        "Content-Type":
-          "application/x-www-form-urlencoded",
-      },
-      body,
-      cache: "no-store",
+  const response = await fetch(config.tokenUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${credentials}`,
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-  );
+    body,
+    cache: "no-store",
+    redirect: "error",
+  });
 
   if (!response.ok) {
     const text = await response.text();
 
-    console.error(
-      "SSO token exchange failed:",
-      text,
-    );
+    console.error("SSO token exchange failed:", text);
 
     throw new Error(
-      "Failed to exchange authorization code",
+      `Failed to exchange authorization code: HTTP ${response.status}`,
     );
   }
 
   return response.json();
 }
-
