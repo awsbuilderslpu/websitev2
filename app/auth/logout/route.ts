@@ -1,15 +1,34 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { NextResponse, type NextRequest } from "next/server";
+import { createAuthServerClient } from "@/lib/supabase/auth-server";
 
-export async function GET(request: Request) {
-  const cookieStore = await cookies();
+export async function POST(request: NextRequest) {
+  const requestUrl = new URL(request.url);
+  const appOrigin = new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin,
+  ).origin;
+  const origin = request.headers.get("origin");
 
-  cookieStore.delete(SESSION_COOKIE);
-  cookieStore.delete("sso_state");
-  cookieStore.delete("sso_nonce");
-  cookieStore.delete("sso_code_verifier");
-  cookieStore.delete("sso_next");
+  if (origin) {
+    try {
+      if (new URL(origin).origin !== appOrigin) {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+    } catch {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+  }
 
-  return NextResponse.redirect(new URL("/", request.url));
+  const supabase = await createAuthServerClient();
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.error("[AUTH] Sign-out failed:", error.message);
+
+    return NextResponse.redirect(
+      new URL("/auth/login?error=logout_failed", appOrigin),
+      303,
+    );
+  }
+
+  return NextResponse.redirect(new URL("/auth/login", appOrigin), 303);
 }

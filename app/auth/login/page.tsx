@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,154 +10,442 @@ import {
   Code2,
   Users,
   Sparkles,
+  LoaderCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
+
+type LoginMethod = "google" | "password" | null;
+
+function getSafeNextPath(value: string | null): string {
+  if (
+    !value ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.startsWith("/\\")
+  ) {
+    return "/dashboard";
+  }
+
+  try {
+    const base = new URL("https://internal.invalid");
+    const target = new URL(value, base);
+
+    if (target.origin !== base.origin) {
+      return "/dashboard";
+    }
+
+    return `${target.pathname}${target.search}${target.hash}`;
+  } catch {
+    return "/dashboard";
+  }
+}
+
+function getAuthError(value: string | null): string | null {
+  switch (value) {
+    case "oauth_start_failed":
+      return "We couldn't start Google sign-in. Please try again.";
+    case "oauth_callback_failed":
+      return "Google sign-in couldn't be completed. Please try again.";
+    case "profile_lookup_failed":
+      return "We couldn't verify your account. Please try again later.";
+    case "logout_failed":
+      return "Sign-out failed. Please try again.";
+    default:
+      return null;
+  }
+}
+
+function GoogleIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="20"
+      height="20"
+      viewBox="0 0 48 48"
+      fill="none"
+    >
+      <path
+        fill="#4285F4"
+        d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11a9.4 9.4 0 0 1-4.1 6.2v5.1h6.6c3.9-3.6 6.1-8.8 6.1-15Z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 44c5.5 0 10.1-1.8 13.5-4.9l-6.6-5.1c-1.8 1.2-4 2-6.9 2-5.3 0-9.8-3.6-11.4-8.4H5.8v5.3A20.4 20.4 0 0 0 24 44Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M12.6 27.6a12.2 12.2 0 0 1 0-7.2v-5.3H5.8a20.1 20.1 0 0 0 0 17.8l6.8-5.3Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M24 12c3 0 5.6 1 7.7 3.1l5.8-5.8C34 5.9 29.5 4 24 4A20.4 20.4 0 0 0 5.8 15.1l6.8 5.3C14.2 15.6 18.7 12 24 12Z"
+      />
+    </svg>
+  );
+}
 
 function LoginContent() {
   const searchParams = useSearchParams();
-  const requestedNext = searchParams.get("next");
 
-  const next =
-    requestedNext?.startsWith("/") &&
-    !requestedNext.startsWith("//") &&
-    !requestedNext.startsWith("/\\")
-      ? requestedNext
-      : "/dashboard";
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loadingMethod, setLoadingMethod] = useState<LoginMethod>(null);
+  const [error, setError] = useState<string | null>(
+    getAuthError(searchParams.get("error")),
+  );
 
-  const loginUrl = `/auth/login/start?next=${encodeURIComponent(next)}`;
+  const next = getSafeNextPath(searchParams.get("next"));
+  const isLoading = loadingMethod !== null;
+
+  function handleGoogleLogin() {
+    if (isLoading) return;
+
+    setLoadingMethod("google");
+    setError(null);
+
+    const params = new URLSearchParams({ next });
+
+    window.location.assign(`/auth/login/start?${params.toString()}`);
+  }
+
+  async function handlePasswordLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (isLoading) return;
+
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail || !password) {
+      setError("Enter both your email address and password.");
+      return;
+    }
+
+    setLoadingMethod("password");
+    setError(null);
+
+    try {
+      const response = await fetch("/auth/login/password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "same-origin",
+        cache: "no-store",
+        body: JSON.stringify({
+          email: normalizedEmail,
+          password,
+        }),
+      });
+
+      const result: {
+        ok?: boolean;
+        error?: string;
+        message?: string;
+        redirect?: string;
+      } = await response.json().catch(() => ({}));
+
+      if (
+        response.status === 403 &&
+        result.error === "account_not_approved" &&
+        result.redirect === "https://sso.awslpu.in/"
+      ) {
+        window.location.assign(result.redirect);
+        return;
+      }
+
+      if (!response.ok || !result.ok) {
+        if (result.error === "profile_lookup_failed") {
+          throw new Error(
+            "We couldn't verify your account. Please try again later.",
+          );
+        }
+
+        if (result.error === "invalid_request" ||
+            result.error === "invalid_credentials_format") {
+          throw new Error("Enter a valid email address and password.");
+        }
+
+        throw new Error("Invalid email or password.");
+      }
+
+      window.location.assign(next);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to sign in. Please try again.",
+      );
+      setLoadingMethod(null);
+    }
+  }
 
   return (
-    <main className="relative flex min-h-[calc(100svh-80px)] items-center overflow-hidden bg-[#FAF9F6] px-5 py-6 text-[#242333] sm:px-10 lg:px-16">
-      <div className="pointer-events-none absolute -left-24 top-20 h-64 w-64 rounded-full bg-[#E5E2FF]/60 blur-3xl" />
-      <div className="pointer-events-none absolute -right-20 top-10 h-56 w-56 rounded-full bg-[#FFE5A5]/40 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-[-100px] left-[42%] h-64 w-64 rounded-full bg-[#FFDCCF]/35 blur-3xl" />
+    <main className="relative min-h-screen overflow-hidden bg-[#faf9f6] text-[#161616]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-orange-200/30 blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-amber-200/30 blur-3xl"
+      />
 
-      <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20">
-        <section className="relative">
-          <div className="pointer-events-none absolute right-12 top-0 hidden h-20 w-20 rotate-12 rounded-[1.75rem] bg-[#FFE5A5] sm:block" />
+      <header className="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-6 sm:px-10">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#232f3e] text-white">
+            <Cloud size={23} strokeWidth={2} />
+          </div>
 
-          <div className="relative z-10">
-
-            <h1 className="mt-6 max-w-3xl text-[3.6rem] font-semibold leading-[0.9] tracking-[-0.085em] sm:text-7xl lg:text-[6.2rem]">
-              Good things
-              <br />
-              start with
-              <br />
-              <span className="relative inline-block text-[#6252BD]">
-                building.
-                <svg
-                  viewBox="0 0 280 16"
-                  fill="none"
-                  className="absolute -bottom-3 left-0 w-full"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M4 10C65 2 179 1 274 8"
-                    stroke="#F07832"
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </span>
-            </h1>
-
-            <p className="mt-6 max-w-lg text-base leading-7 text-[#656474] sm:text-lg">
-              Learn cloud. Build real projects. Meet people who love making
-              things as much as you do. Your AWS SBG community is just one
-              sign-in away.
+          <div>
+            <p className="text-sm font-bold tracking-tight">
+              AWS Student Builder Group
             </p>
+            <p className="text-xs text-neutral-500">
+              Lovely Professional University
+            </p>
+          </div>
+        </Link>
 
-            <div className="relative mt-9 flex min-h-24 items-center">
-              <div className="absolute left-2 top-1 h-20 w-20 rounded-full bg-[#FFE5A5] sm:left-8 sm:h-24 sm:w-24" />
-              <div className="absolute left-16 top-5 h-16 w-16 rotate-12 rounded-[1.5rem] bg-[#F07832] sm:left-24 sm:h-20 sm:w-20" />
-              <div className="absolute left-28 top-1 flex h-14 w-14 items-center justify-center rounded-full bg-[#DDF2E5] text-[#287B56] sm:left-40 sm:h-16 sm:w-16">
-                <Code2 size={25} />
+        <Link
+          href="/"
+          className="hidden items-center gap-2 text-sm text-neutral-600 transition hover:text-black sm:flex"
+        >
+          Back to home
+          <ArrowRight size={15} />
+        </Link>
+      </header>
+
+      <section className="relative mx-auto grid min-h-[calc(100vh-100px)] max-w-7xl items-center gap-12 px-6 py-12 sm:px-10 lg:grid-cols-2 lg:gap-20">
+        <div className="mx-auto w-full max-w-xl">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white/70 px-3 py-1.5 text-xs font-medium text-orange-800">
+            <Sparkles size={14} />
+            Build. Learn. Ship.
+          </div>
+
+          <h1 className="max-w-lg text-4xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+            Your next idea
+            <br />
+            starts <span className="text-orange-600">here.</span>
+          </h1>
+
+          <p className="mt-6 max-w-lg text-base leading-7 text-neutral-600 sm:text-lg">
+            Sign in to access your community dashboard, manage your profile,
+            and stay connected with the AWS Student Builder Group at LPU.
+          </p>
+
+          <div className="mt-10 space-y-5">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white">
+                <Users size={19} className="text-neutral-700" />
               </div>
-              <div className="ml-48 sm:ml-64">
-                <p className="text-sm font-semibold">Made for builders.</p>
-                <p className="mt-1 text-xs leading-5 text-[#777584]">
-                  Curious minds. Real projects.
-                  <br />
-                  A community that builds together.
+              <div>
+                <h2 className="text-sm font-semibold">
+                  Your builder community
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-neutral-500">
+                  Keep up with community activities, events, and opportunities.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white">
+                <Code2 size={19} className="text-neutral-700" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold">
+                  Tools for student builders
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-neutral-500">
+                  Access the platforms and resources available to your account.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white">
+                <ShieldCheck size={19} className="text-neutral-700" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold">Secure sign-in</h2>
+                <p className="mt-1 text-sm leading-6 text-neutral-500">
+                  Sign in with Google or your registered email and password.
                 </p>
               </div>
             </div>
           </div>
-        </section>
+        </div>
 
-        <section className="relative mx-auto w-full max-w-md lg:ml-auto lg:mr-0">
-          <div className="pointer-events-none absolute -right-2 -top-5 h-14 w-14 rotate-12 rounded-[1.25rem] bg-[#FFDCCF] sm:-right-6" />
-          <div className="pointer-events-none absolute -bottom-5 -left-5 h-16 w-16 rounded-full bg-[#E5E2FF]/80" />
+        <div className="mx-auto w-full max-w-md">
+          <div className="rounded-3xl border border-neutral-200/80 bg-white p-7 shadow-[0_24px_80px_-32px_rgba(0,0,0,0.18)] sm:p-10">
+            <div className="mb-7">
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-700">
+                <Cloud size={25} />
+              </div>
 
-          <div className="relative">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFE5A5] text-[#A56A00]">
-              <Cloud size={25} />
+              <h2 className="text-2xl font-semibold tracking-tight">
+                Welcome back
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-neutral-500">
+                Sign in to continue to your account.
+              </p>
             </div>
 
-            <p className="mt-5 text-sm font-semibold text-[#F07832]">
-              Welcome back, builder
-            </p>
+            {error && (
+              <div
+                role="alert"
+                aria-live="polite"
+                className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+              >
+                {error}
+              </div>
+            )}
 
-            <h2 className="mt-2 text-4xl font-semibold leading-tight tracking-[-0.075em] sm:text-5xl">
-              Your space
-              <br />
-              awaits.
-            </h2>
+            <form onSubmit={handlePasswordLogin} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-medium text-neutral-700"
+                >
+                  Email address
+                </label>
 
-            <p className="mt-3 text-sm leading-7 text-[#777584] sm:text-base">
-              Sign in to access your dashboard, discover opportunities, and
-              stay connected with AWS SBG.
-            </p>
-
-            <a
-              href={loginUrl}
-              className="group mt-6 flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-[#242333] px-6 py-4 text-sm font-semibold text-white transition duration-200 hover:bg-[#6252BD] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#E5E2FF]"
-            >
-              Continue with AWS SBG
-              <ArrowRight
-                size={18}
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              />
-            </a>
-
-            <div className="mt-4 flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#DDF2E5] text-[#287B56]">
-                <ShieldCheck size={19} />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                  maxLength={320}
+                  disabled={isLoading}
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-neutral-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/15 disabled:bg-neutral-50"
+                />
               </div>
 
               <div>
-                <p className="text-sm font-semibold">Secure sign-in</p>
-                <p className="mt-1 text-xs leading-5 text-[#777584]">
-                  Authentication is handled by AWS SBG Identity Services.
-                  Your password is never entered on this page.
+                <label
+                  htmlFor="password"
+                  className="mb-2 block text-sm font-medium text-neutral-700"
+                >
+                  Password
+                </label>
+
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
+                    maxLength={1024}
+                    disabled={isLoading}
+                    className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 pr-12 text-sm outline-none transition placeholder:text-neutral-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/15 disabled:bg-neutral-50"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    disabled={isLoading}
+                    className="absolute inset-y-0 right-0 flex items-center justify-center px-4 text-neutral-500 transition hover:text-neutral-900 disabled:opacity-50"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#232f3e] px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-[#34465a] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loadingMethod === "password" ? (
+                  <>
+                    <LoaderCircle size={18} className="animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign in with email
+                    <ArrowRight size={17} />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="my-6 flex items-center gap-4">
+              <div className="h-px flex-1 bg-neutral-200" />
+              <span className="text-xs text-neutral-400">OR CONTINUE WITH</span>
+              <div className="h-px flex-1 bg-neutral-200" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-300 bg-white px-4 py-3.5 text-sm font-semibold transition hover:border-neutral-400 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loadingMethod === "google" ? (
+                <>
+                  <LoaderCircle size={20} className="animate-spin" />
+                  Redirecting to Google...
+                </>
+              ) : (
+                <>
+                  <GoogleIcon />
+                  Continue with Google
+                </>
+              )}
+            </button>
+
+            <div className="mt-6 rounded-xl bg-[#faf9f6] p-4">
+              <div className="flex items-start gap-3">
+                <ShieldCheck
+                  size={18}
+                  className="mt-0.5 shrink-0 text-neutral-600"
+                />
+                <p className="text-xs leading-5 text-neutral-600">
+                  Access is available to approved accounts. If your account
+                  isn't registered with the community, you'll be redirected
+                  to the account access portal.
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#777584]">
-              <Users size={14} />
-              <span>One identity for your AWS SBG community.</span>
-            </div>
-
-            <div className="mt-4 flex items-center gap-2 text-xs text-[#777584]">
-              <Sparkles size={14} className="shrink-0 text-[#F07832]" />
-              <span>
-                Securely redirected to{" "}
-                <span className="font-semibold text-[#242333]">
-                  sso.awslpu.in
-                </span>
-              </span>
-            </div>
-
-            <Link
-              href="/"
-              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#656474] transition hover:text-[#6252BD]"
-            >
-              <ArrowRight size={15} className="rotate-180" />
-              Back to home
-            </Link>
+            <p className="mt-6 text-center text-xs leading-5 text-neutral-400">
+              By continuing, you agree to use community resources responsibly.
+            </p>
           </div>
-        </section>
-      </div>
+
+          <p className="mt-6 text-center text-xs text-neutral-500">
+            Need help accessing your account?{" "}
+            <a
+              href="https://sso.awslpu.in/"
+              className="font-medium text-neutral-800 underline underline-offset-4 hover:text-orange-700"
+            >
+              Visit the access portal
+            </a>
+          </p>
+        </div>
+      </section>
+
+      <footer className="relative border-t border-neutral-200/70 px-6 py-5 sm:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 text-xs text-neutral-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>AWS Student Builder Group · LPU</p>
+          <p>Built for the builders of tomorrow.</p>
+        </div>
+      </footer>
     </main>
   );
 }
@@ -166,8 +454,11 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-[calc(100svh-80px)] items-center justify-center bg-[#FAF9F6]">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#E5E2FF] border-t-[#6252BD]" />
+        <main className="flex min-h-screen items-center justify-center bg-[#faf9f6]">
+          <LoaderCircle
+            size={28}
+            className="animate-spin text-orange-600"
+          />
         </main>
       }
     >

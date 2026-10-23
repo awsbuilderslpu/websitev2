@@ -6,13 +6,14 @@ import { requireUser } from "@/lib/auth";
 export default async function DashboardPage() {
   const user = await requireUser("/dashboard");
 
-  if (user.role === "admin") {
-    return <AdminDashboard user={user} />;
-  }
+  switch (user.role) {
+    case "admin":
+      return <AdminDashboard user={user} />;
 
-  if (user.role === "core") {
-    return <CoreDashboard user={user} />;
-  }
+    case "core":
+      return <CoreDashboard user={user} />;
 
-  return <UserDashboard user={user} />;
+    default:
+      return <UserDashboard user={user} />;
+  }
 }

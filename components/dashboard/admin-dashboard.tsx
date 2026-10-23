@@ -17,7 +17,7 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useState, type ComponentType } from "react";
 
 type AuthUser = {
   sub: string;
@@ -31,7 +31,16 @@ type AdminDashboardProps = {
   user: AuthUser;
 };
 
-const adminItems = [
+type DashboardItem = {
+  title: string;
+  description: string;
+  href: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
+  color: string;
+  iconColor: string;
+};
+
+const adminItems: DashboardItem[] = [
   {
     title: "Events",
     description: "Create, publish, and manage community events.",
@@ -82,7 +91,7 @@ const adminItems = [
   },
 ];
 
-const personalItems = [
+const personalItems: DashboardItem[] = [
   {
     title: "My Profile",
     description: "Your account and personal information.",
@@ -121,12 +130,12 @@ function MemberIdCard({
   user,
   displayName,
   roleLabel,
-  cardRef,
+  setCardElement,
 }: {
   user: AuthUser;
   displayName: string;
   roleLabel: string;
-  cardRef: React.RefObject<HTMLDivElement | null>;
+  setCardElement: (element: HTMLDivElement | null) => void;
 }) {
   const firstName = displayName.split(/\s+/)[0] || "Member";
   const lastName = displayName.split(/\s+/).slice(1).join(" ");
@@ -135,7 +144,7 @@ function MemberIdCard({
 
   return (
     <div
-      ref={cardRef}
+      ref={setCardElement}
       id="sbg-member-id-card"
       className="relative mx-auto flex w-full max-w-[370px] flex-col overflow-hidden border border-[#BFC1C4] bg-[#FCFBF8] text-[#172033] shadow-[0_12px_32px_rgba(36,35,51,0.07)]"
       style={{ aspectRatio: "370 / 550" }}
@@ -203,22 +212,20 @@ function MemberIdCard({
               BUILDER IDENTITY
             </p>
 
-            <div className="mt-3 flex items-start gap-2">
-              <div className="min-w-0 flex-1">
-                <h2 className="break-words text-[clamp(26px,7.4vw,39px)] font-semibold leading-[0.94] tracking-[-0.065em]">
-                  {firstName}
-                  {lastName && (
-                    <>
-                      <br />
-                      {lastName}
-                    </>
-                  )}
-                </h2>
+            <div className="mt-3">
+              <h2 className="break-words text-[clamp(26px,7.4vw,39px)] font-semibold leading-[0.94] tracking-[-0.065em]">
+                {firstName}
+                {lastName && (
+                  <>
+                    <br />
+                    {lastName}
+                  </>
+                )}
+              </h2>
 
-                <p className="mt-3 break-all text-[clamp(9px,2.6vw,11px)] text-[#465064]">
-                  {user.email || "AWS SBG Member"}
-                </p>
-              </div>
+              <p className="mt-3 break-all text-[clamp(9px,2.6vw,11px)] text-[#465064]">
+                {user.email || "AWS SBG Member"}
+              </p>
             </div>
 
             <div className="mt-3 inline-flex items-center gap-1.5 border border-[#C9C6C0] bg-white/80 px-2 py-1">
@@ -267,7 +274,7 @@ function MemberIdCard({
             <div className="shrink-0 border border-[#D5D1CA] bg-white p-1.5">
               <Image
                 src={qrUrl}
-                alt="QR code containing your SSO profile ID"
+                alt="QR code containing your profile ID"
                 width={180}
                 height={180}
                 unoptimized
@@ -311,11 +318,10 @@ function MemberIdCard({
 export function AdminDashboard({ user }: AdminDashboardProps) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [cardElement, setCardElement] = useState<HTMLDivElement | null>(null);
 
-  const displayName =
-    user.name || user.email?.split("@")[0] || "SBG Member";
-
+  const displayName = user.name || user.email?.split("@")[0] || "SBG Member";
+  const firstName = displayName.split(/\s+/)[0];
   const initials = displayName
     .split(/\s+/)
     .slice(0, 2)
@@ -329,7 +335,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
         ? "Core Team"
         : "Community Member";
 
-  const memberCode = useMemo(() => getMemberCode(user.sub), [user.sub]);
+  const memberCode = getMemberCode(user.sub);
 
   async function copyId() {
     try {
@@ -342,23 +348,22 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
   }
 
   async function downloadCard() {
-    if (!cardRef.current || downloading) return;
+    if (!cardElement || downloading) return;
 
     setDownloading(true);
 
     try {
-      const htmlToImage = await import("html-to-image");
-
-      const dataUrl = await htmlToImage.toPng(cardRef.current, {
-        pixelRatio: 3,
-        cacheBust: true,
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(cardElement, {
+        pixelRatio: 2,
       });
 
       const link = document.createElement("a");
       link.href = dataUrl;
       link.download = `aws-sbg-id-${memberCode}.png`;
       link.click();
-    } catch {
+    } catch (error) {
+      console.error("[DASHBOARD] Card export failed:", error);
       window.print();
     } finally {
       setDownloading(false);
@@ -377,20 +382,16 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F07832]">
                   Your corner
                 </p>
-
                 <h1 className="mt-2 text-3xl font-semibold tracking-[-0.065em] sm:text-4xl">
                   Your SBG activity.
                 </h1>
-
                 <p className="mt-2 text-sm leading-6 text-[#777584]">
-                  Welcome back, {displayName.split(/\s+/)[0]}. Your profile,
-                  participation, and achievements.
+                  Welcome back, {firstName}. Your profile, participation, and
+                  achievements.
                 </p>
               </div>
 
-              <DashboardSection
-                items={personalItems}
-              />
+              <DashboardSection items={personalItems} />
             </section>
 
             {user.role === "admin" && (
@@ -399,19 +400,15 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6252BD]">
                     Administration
                   </p>
-
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.06em] sm:text-3xl">
                     Run the community.
                   </h2>
-
                   <p className="mt-2 text-sm leading-6 text-[#777584]">
                     Manage the people and activities that keep SBG moving.
                   </p>
                 </div>
 
-                <DashboardSection
-                  items={adminItems}
-                />
+                <DashboardSection items={adminItems} />
               </section>
             )}
           </div>
@@ -422,7 +419,6 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#F07832]">
                   Your identity
                 </p>
-
                 <h2 className="mt-1.5 text-2xl font-semibold tracking-[-0.06em]">
                   Your SBG ID.
                 </h2>
@@ -437,7 +433,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
               user={user}
               displayName={displayName}
               roleLabel={roleLabel}
-              cardRef={cardRef}
+              setCardElement={setCardElement}
             />
 
             <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#EAE6DE] bg-white px-3 py-3">
@@ -448,7 +444,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold">Member identification</p>
                 <p className="mt-1 text-[11px] leading-4 text-[#777584]">
-                  Unique SSO profile ID
+                  Unique profile ID
                 </p>
               </div>
 
@@ -527,18 +523,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
   );
 }
 
-function DashboardSection({
-  items,
-}: {
-  items: {
-    title: string;
-    description: string;
-    href: string;
-    icon: React.ComponentType<{ size?: number; className?: string }>;
-    color: string;
-    iconColor: string;
-  }[];
-}) {
+function DashboardSection({ items }: { items: DashboardItem[] }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {items.map((item) => {
@@ -571,7 +556,6 @@ function DashboardSection({
               <h3 className="text-base font-semibold tracking-tight">
                 {item.title}
               </h3>
-
               <p className="mt-1.5 text-xs leading-5 text-[#777584]">
                 {item.description}
               </p>

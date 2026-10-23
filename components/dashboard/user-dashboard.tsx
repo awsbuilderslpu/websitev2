@@ -8,11 +8,9 @@ import {
   CalendarCheck,
   CheckCircle2,
   Copy,
-  Download,
-  QrCode,
   UserRound,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 type AuthUser = {
   sub: string;
@@ -29,72 +27,45 @@ type UserDashboardProps = {
 const dashboardItems = [
   {
     title: "My Attendance",
-    description:
-      "View your event attendance and participation history.",
+    description: "View your event attendance and participation history.",
     href: "/dashboard/attendance",
     icon: CalendarCheck,
   },
   {
     title: "My Badges",
-    description:
-      "View the badges you have earned through the community.",
+    description: "View the badges you have earned through the community.",
     href: "/dashboard/badges",
     icon: Award,
   },
   {
     title: "My Profile",
-    description:
-      "View and manage your AWS SBG profile information.",
+    description: "View and manage your AWS SBG profile information.",
     href: "/profile",
     icon: UserRound,
   },
 ];
 
-export function UserDashboard({
-  user,
-}: UserDashboardProps) {
+export function UserDashboard({ user }: UserDashboardProps) {
   const [copied, setCopied] = useState(false);
 
-  const displayName =
-    user.name ||
-    user.email?.split("@")[0] ||
-    "SBG Member";
-
+  const displayName = user.name || user.email?.split("@")[0] || "SBG Member";
+  const firstName = displayName.split(/\s+/)[0];
   const initials = displayName
     .split(/\s+/)
     .slice(0, 2)
     .map((part) => part.charAt(0).toUpperCase())
     .join("");
 
-  const qrUrl = useMemo(() => {
-    const encodedId = encodeURIComponent(user.sub);
-
-    return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedId}`;
-  }, [user.sub]);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(user.sub)}`;
 
   async function copyId() {
     try {
       await navigator.clipboard.writeText(user.sub);
       setCopied(true);
-
-      window.setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch {
-      setCopied(false);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch (error) {
+      console.error("[DASHBOARD] Failed to copy profile ID:", error);
     }
-  }
-
-  function downloadQr() {
-    const link = document.createElement("a");
-
-    link.href = qrUrl;
-    link.download = `sbg-profile-${user.sub}.png`;
-    link.target = "_blank";
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   }
 
   return (
@@ -113,14 +84,12 @@ export function UserDashboard({
               <h1 className="text-5xl font-bold leading-[0.95] tracking-[-0.055em] sm:text-6xl">
                 Welcome,
                 <br />
-                <span className="text-[#A855F7]">
-                  {displayName.split(" ")[0]}.
-                </span>
+                <span className="text-[#A855F7]">{firstName}.</span>
               </h1>
 
               <p className="mt-6 max-w-xl text-base leading-7 text-[#9CA3AF] sm:text-lg">
-                Your AWS Student Builder Group profile,
-                attendance, and achievements.
+                Your AWS Student Builder Group profile, attendance, and
+                achievements.
               </p>
             </div>
 
@@ -131,12 +100,11 @@ export function UserDashboard({
                 name={displayName}
               />
 
-              <div>
-                <p className="text-sm font-medium text-white">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-white">
                   {displayName}
                 </p>
-
-                <p className="mt-1 text-xs text-[#737B8C]">
+                <p className="mt-1 truncate text-xs text-[#737B8C]">
                   {user.email}
                 </p>
               </div>
@@ -152,7 +120,6 @@ export function UserDashboard({
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
                 Your activity
               </p>
-
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
                 Your SBG space.
               </h2>
@@ -174,11 +141,7 @@ export function UserDashboard({
 
                     <div>
                       <div className="flex items-center gap-3">
-                        <Icon
-                          size={18}
-                          className="text-[#A855F7]"
-                        />
-
+                        <Icon size={18} className="text-[#A855F7]" />
                         <h3 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-[#B45CFF] sm:text-2xl">
                           {item.title}
                         </h3>
@@ -203,7 +166,6 @@ export function UserDashboard({
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
                 Your identity
               </p>
-
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
                 Your QR.
               </h2>
@@ -226,10 +188,9 @@ export function UserDashboard({
                   <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#A855F7]">
                     Profile QR
                   </p>
-
                   <p className="mt-2 text-sm leading-6 text-[#8F96A5]">
-                    Use this QR code for quick profile
-                    identification at SBG events.
+                    Use this QR code for quick profile identification at SBG
+                    events.
                   </p>
                 </div>
 
@@ -258,24 +219,13 @@ export function UserDashboard({
                   </div>
                 </div>
 
-                <div className="mt-5 flex w-full gap-2">
-                  <button
-                    type="button"
-                    onClick={downloadQr}
-                    className="flex flex-1 items-center justify-center gap-2 border border-white/10 px-4 py-3 text-xs font-medium text-[#C7CAD2] transition-colors hover:border-[#A855F7] hover:bg-[#A855F7] hover:text-white"
-                  >
-                    <Download size={15} />
-                    Download
-                  </button>
-
-                  <Link
-                    href="/profile"
-                    className="flex flex-1 items-center justify-center gap-2 border border-white/10 px-4 py-3 text-xs font-medium text-[#C7CAD2] transition-colors hover:border-[#A855F7] hover:bg-[#A855F7] hover:text-white"
-                  >
-                    Profile
-                    <ArrowUpRight size={15} />
-                  </Link>
-                </div>
+                <Link
+                  href="/profile"
+                  className="mt-5 flex w-full items-center justify-center gap-2 border border-white/10 px-4 py-3 text-xs font-medium text-[#C7CAD2] transition-colors hover:border-[#A855F7] hover:bg-[#A855F7] hover:text-white"
+                >
+                  Manage profile
+                  <ArrowUpRight size={15} />
+                </Link>
               </div>
             </div>
           </div>
@@ -289,7 +239,6 @@ export function UserDashboard({
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B45CFF]">
                 Keep building
               </p>
-
               <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">
                 See what&apos;s happening in the community.
               </h2>
@@ -318,21 +267,23 @@ function Avatar({
   initials: string;
   name: string;
 }) {
+  if (!src) {
+    return (
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#A855F7]/15 text-sm font-semibold text-[#C084FC]">
+        {initials}
+      </div>
+    );
+  }
+
   return (
     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#A855F7]/15">
-      {src ? (
-        <Image
-          src={src}
-          alt={name}
-          fill
-          sizes="48px"
-          className="object-cover"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-[#C084FC]">
-          {initials}
-        </div>
-      )}
+      <Image
+        src={src}
+        alt={name}
+        fill
+        sizes="48px"
+        className="object-cover"
+      />
     </div>
   );
 }
