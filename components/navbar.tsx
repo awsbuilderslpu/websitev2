@@ -43,11 +43,15 @@ export function Navbar() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let mounted = true;
+
+    setProfileOpen(false);
+    setMobileOpen(false);
 
     async function loadUser() {
       try {
@@ -56,6 +60,7 @@ export function Navbar() {
         });
 
         if (!response.ok) {
+          if (mounted) setUser(null);
           return;
         }
 
@@ -92,19 +97,33 @@ export function Navbar() {
       }
     }
 
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setProfileOpen(false);
+        setMobileOpen(false);
+      }
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, []);
+
+  const closeNavigation = () => {
+    setMobileOpen(false);
+    setProfileOpen(false);
+  };
 
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/";
     }
 
-    return pathname.startsWith(href);
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   const displayName =
@@ -117,6 +136,7 @@ export function Navbar() {
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
         <Link
           href="/"
+          onClick={closeNavigation}
           className="flex shrink-0 items-center transition-opacity hover:opacity-80"
         >
           <Image
@@ -159,6 +179,7 @@ export function Navbar() {
                 type="button"
                 onClick={() => setProfileOpen((open) => !open)}
                 aria-expanded={profileOpen}
+                aria-haspopup="true"
                 className="flex items-center gap-2 rounded-full border border-[#EAE6DE] bg-white px-2.5 py-1.5 transition-colors hover:border-[#F07832]/60"
               >
                 <Avatar
@@ -185,7 +206,11 @@ export function Navbar() {
               </button>
 
               {profileOpen && (
-                <ProfileMenu user={user} displayName={displayName} />
+                <ProfileMenu
+                  user={user}
+                  displayName={displayName}
+                  onNavigate={closeNavigation}
+                />
               )}
             </div>
           ) : (
@@ -203,7 +228,7 @@ export function Navbar() {
         </div>
 
         <div className="ml-auto lg:hidden">
-          <Sheet>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#EAE6DE] bg-white text-[#242333] transition-colors hover:border-[#F07832] hover:bg-[#FFF0D8]">
               <Menu size={19} />
               <span className="sr-only">Open navigation</span>
@@ -242,25 +267,48 @@ export function Navbar() {
                       <p className="mt-1 truncate text-xs text-[#858292]">
                         {user.email}
                       </p>
+                      <p className="mt-1 text-[11px] capitalize text-[#858292]">
+                        {user.role} account
+                      </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-4 grid grid-cols-[1fr_1fr_auto] gap-2">
                     <Link
                       href="/dashboard"
-                      className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[#EAE6DE] px-3 py-2.5 text-xs font-medium hover:border-[#F07832] hover:bg-[#FFF0D8]"
+                      onClick={closeNavigation}
+                      className="flex items-center justify-center gap-1.5 rounded-full border border-[#EAE6DE] px-2 py-2.5 text-xs font-medium transition-colors hover:border-[#F07832] hover:bg-[#FFF0D8]"
                     >
                       Dashboard
-                      <ArrowUpRight size={14} />
+                      <ArrowUpRight size={13} />
                     </Link>
 
                     <Link
-                      href="/auth/logout"
-                      aria-label="Log out"
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-[#EAE6DE] text-[#686676] transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                      href="/dashboard/profile"
+                      onClick={closeNavigation}
+                      aria-current={
+                        isActive("/dashboard/profile") ? "page" : undefined
+                      }
+                      className={`flex items-center justify-center gap-1.5 rounded-full border px-2 py-2.5 text-xs font-medium transition-colors ${
+                        isActive("/dashboard/profile")
+                          ? "border-[#F07832] bg-[#FFF0D8] text-[#9A4D00]"
+                          : "border-[#EAE6DE] hover:border-[#F07832] hover:bg-[#FFF0D8]"
+                      }`}
                     >
-                      <LogOut size={16} />
+                      <UserRound size={13} />
+                      Profile
                     </Link>
+
+                    <form action="/auth/logout" method="POST">
+                      <button
+                        type="submit"
+                        aria-label="Log out"
+                        title="Log out"
+                        className="flex h-full min-h-10 w-10 items-center justify-center rounded-full border border-[#EAE6DE] text-[#686676] transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                      >
+                        <LogOut size={16} />
+                      </button>
+                    </form>
                   </div>
                 </div>
               )}
@@ -273,6 +321,7 @@ export function Navbar() {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={closeNavigation}
                       aria-current={active ? "page" : undefined}
                       className={`flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors ${
                         active
@@ -294,6 +343,7 @@ export function Navbar() {
                 {!user && !loading && (
                   <Link
                     href="/auth/login"
+                    onClick={closeNavigation}
                     className="mt-3 flex items-center justify-center gap-2 rounded-full bg-[#F07832] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#D96120]"
                   >
                     Sign in
@@ -312,9 +362,11 @@ export function Navbar() {
 function ProfileMenu({
   user,
   displayName,
+  onNavigate,
 }: {
   user: AuthUser;
   displayName: string;
+  onNavigate: () => void;
 }) {
   return (
     <div className="absolute right-0 top-[calc(100%+8px)] w-64 rounded-2xl border border-[#EAE6DE] bg-white p-2 shadow-xl shadow-[#242333]/10">
@@ -338,10 +390,15 @@ function ProfileMenu({
       <div className="py-1">
         <Link
           href="/dashboard"
-          className="group flex items-center justify-between rounded-xl px-3 py-3 text-sm text-[#555365] transition-colors hover:bg-[#FAF7F1] hover:text-[#242333]"
+          onClick={onNavigate}
+          className={`group flex items-center justify-between rounded-xl px-3 py-3 text-sm transition-colors ${
+            pathnameIsDashboard() 
+              ? "bg-[#FAF7F1] text-[#242333]"
+              : "text-[#555365] hover:bg-[#FAF7F1] hover:text-[#242333]"
+          }`}
         >
           <span className="flex items-center gap-3">
-            <UserRound size={16} />
+            <ArrowUpRight size={16} />
             Dashboard
           </span>
           <ArrowUpRight
@@ -351,12 +408,29 @@ function ProfileMenu({
         </Link>
 
         <Link
-          href="/auth/logout"
-          className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-[#555365] transition-colors hover:bg-red-50 hover:text-red-600"
+          href="/dashboard/profile"
+          onClick={onNavigate}
+          className="group flex items-center justify-between rounded-xl px-3 py-3 text-sm text-[#555365] transition-colors hover:bg-[#FAF7F1] hover:text-[#242333]"
         >
-          <LogOut size={16} />
-          Log out
+          <span className="flex items-center gap-3">
+            <UserRound size={16} />
+            Profile
+          </span>
+          <ArrowUpRight
+            size={15}
+            className="text-[#A5A1AD] group-hover:text-[#F07832]"
+          />
         </Link>
+
+        <form action="/auth/logout" method="POST">
+          <button
+            type="submit"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm text-[#555365] transition-colors hover:bg-red-50 hover:text-red-600"
+          >
+            <LogOut size={16} />
+            Log out
+          </button>
+        </form>
       </div>
 
       <div className="border-t border-[#F0EDE7] px-3 py-2">
@@ -410,4 +484,10 @@ function getInitials(name: string) {
     .slice(0, 2)
     .map((part) => part.charAt(0).toUpperCase())
     .join("");
+}
+
+function pathnameIsDashboard() {
+  if (typeof window === "undefined") return false;
+
+  return window.location.pathname === "/dashboard";
 }

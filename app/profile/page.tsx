@@ -1,17 +1,16 @@
 import { requireUser } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
+import { WorkspaceEditor } from "@/components/profile/workspace-editor";
 import {
   ArrowUpRight,
   AtSign,
   CalendarDays,
   CheckCircle2,
   Fingerprint,
-  IdCard,
   Mail,
   ShieldCheck,
   UserRound,
   Users,
-  Building2,
 } from "lucide-react";
 
 const SSO_DASHBOARD_URL =
@@ -94,7 +93,6 @@ function DetailItem({
     <div className="min-w-0 rounded-2xl border border-[#EAE7E0] bg-white p-4 sm:p-5">
       <div className="flex items-center gap-2 text-[#898795]">
         <Icon className="h-4 w-4 shrink-0" />
-
         <span className="text-xs font-medium">{label}</span>
       </div>
 
@@ -125,7 +123,7 @@ export default async function ProfilePage() {
         workspace_name,
         workspace_uid,
         sso_sub
-      `
+      `,
     )
     .eq("id", user.sub)
     .maybeSingle();
@@ -136,21 +134,13 @@ export default async function ProfilePage() {
 
   const profile = data as ProfileRecord | null;
 
-  const fullName =
-    profile?.full_name?.trim() || user.name || "Member";
-
+  const fullName = profile?.full_name?.trim() || user.name || "Member";
   const email = profile?.email || user.email || null;
-
   const role = profile?.role || user.role || "member";
-
   const avatarUrl = profile?.avatar_url || user.picture || null;
-
   const profileId = profile?.id || user.sub;
-
   const workspaceName = profile?.workspace_name || null;
-
   const workspaceUid = profile?.workspace_uid || null;
-
   const roleDetails = getRoleDetails(role);
 
   return (
@@ -167,8 +157,8 @@ export default async function ProfilePage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#777584] sm:text-base">
-            Your account, your identity, your community. Here's
-            the information associated with your AWS SBG membership.
+            Your account, your identity, your community. Here's the information
+            associated with your AWS SBG membership.
           </p>
         </header>
 
@@ -177,8 +167,8 @@ export default async function ProfilePage() {
             role="status"
             className="mb-6 rounded-2xl border border-[#F1D9A6] bg-[#FFF8E8] p-4 text-sm leading-6 text-[#855F15]"
           >
-            Some profile details couldn't be loaded. Information
-            below may be based on your current signed-in session.
+            Some profile details couldn't be loaded. Information below may be
+            based on your current signed-in session.
           </div>
         )}
 
@@ -237,7 +227,7 @@ export default async function ProfilePage() {
 
               <div className="flex shrink-0 items-center gap-2 self-start rounded-2xl bg-[#F5F3EE] px-3.5 py-2.5 text-xs font-medium text-[#777584] sm:self-center">
                 <ShieldCheck className="h-4 w-4 text-[#5257C8]" />
-                Read only
+                Account settings
               </div>
             </div>
           </div>
@@ -282,30 +272,24 @@ export default async function ProfilePage() {
         </section>
 
         <section className="mt-8">
+          <WorkspaceEditor
+            workspaceName={workspaceName}
+            workspaceUid={workspaceUid}
+          />
+        </section>
+
+        <section className="mt-8">
           <div className="mb-4">
             <h2 className="text-xl font-bold tracking-tight">
               Community identity
             </h2>
 
             <p className="mt-1 text-sm text-[#777584]">
-              Your AWS SBG workspace and account identifiers.
+              Your account identifiers and identity provider.
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <DetailItem
-              label="Workspace name"
-              value={workspaceName}
-              icon={Building2}
-            />
-
-            <DetailItem
-              label="Workspace UID"
-              value={workspaceUid}
-              icon={IdCard}
-              mono
-            />
-
             <DetailItem
               label="Profile ID"
               value={profileId}
@@ -330,13 +314,13 @@ export default async function ProfilePage() {
 
               <div>
                 <h2 className="text-lg font-bold">
-                  Need to update your details?
+                  Need to update your account details?
                 </h2>
 
                 <p className="mt-1 max-w-lg text-sm leading-6 text-[#777584]">
-                  Profile information is managed centrally by AWS
-                  SBG Identity Services. Open the SSO dashboard to
-                  manage your account details.
+                  You can update your workspace name and UID here. For other
+                  account details managed by AWS SBG Identity Services, open
+                  the SSO dashboard.
                 </p>
               </div>
             </div>
@@ -364,10 +348,9 @@ export default async function ProfilePage() {
             </p>
 
             <p className="mt-1 text-xs leading-5 text-[#777584]">
-              Your profile is linked to your AWS SBG identity.
-              Changes made through the SSO dashboard may take a
-              moment to appear here, depending on when your
-              profile data is synchronised.
+              Your profile is linked to your AWS SBG identity. Workspace
+              changes are saved to your profile and will appear here when the
+              page is refreshed.
             </p>
           </div>
         </footer>

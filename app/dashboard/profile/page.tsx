@@ -1,398 +1,360 @@
-import {
-  ArrowLeft,
-  CalendarDays,
-  Shield,
-  UserRound,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
+import { WorkspaceEditor } from "@/components/profile/workspace-editor";
+import {
+  ArrowUpRight,
+  AtSign,
+  CalendarDays,
+  CheckCircle2,
+  Fingerprint,
+  Mail,
+  ShieldCheck,
+  UserRound,
+  Users,
+} from "lucide-react";
 
-type Profile = {
+const SSO_DASHBOARD_URL =
+  process.env.NEXT_PUBLIC_SSO_DASHBOARD_URL ||
+  "https://sso.awslpu.in/dashboard";
+
+type ProfileRecord = {
   id: string;
   full_name: string | null;
   email: string | null;
-  role: "member" | "core" | "admin";
+  role: string | null;
   avatar_url: string | null;
+  created_at: string | null;
   workspace_name: string | null;
   workspace_uid: string | null;
   sso_sub: string | null;
-  created_at: string;
 };
 
-export default async function ProfilePage() {
-  const currentUser = await getCurrentUser();
+function formatDate(value: string | null | undefined) {
+  if (!value) return "Not available";
 
-  if (!currentUser) {
-    redirect("/auth/login");
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Not available";
   }
 
-  const { data: profile, error } =
-    await supabaseServer
-      .from("profiles")
-      .select(`
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "long",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+}
+
+function getInitials(name: string) {
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase() || "U"
+  );
+}
+
+function getRoleDetails(role: string) {
+  switch (role.toLowerCase()) {
+    case "admin":
+      return {
+        label: "Administrator",
+        className: "bg-[#EFEBFF] text-[#5257C8]",
+      };
+
+    case "core":
+      return {
+        label: "Core Team",
+        className: "bg-[#FFF0CC] text-[#855F15]",
+      };
+
+    default:
+      return {
+        label: "Member",
+        className: "bg-[#DFF3E5] text-[#246C42]",
+      };
+  }
+}
+
+function DetailItem({
+  label,
+  value,
+  icon: Icon,
+  mono = false,
+}: {
+  label: string;
+  value: string | null | undefined;
+  icon: typeof UserRound;
+  mono?: boolean;
+}) {
+  return (
+    <div className="min-w-0 rounded-2xl border border-[#EAE7E0] bg-white p-4 sm:p-5">
+      <div className="flex items-center gap-2 text-[#898795]">
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="text-xs font-medium">{label}</span>
+      </div>
+
+      <p
+        className={`mt-3 break-words text-sm font-semibold text-[#242333] ${
+          mono ? "font-mono text-xs sm:text-sm" : ""
+        }`}
+      >
+        {value || "Not provided"}
+      </p>
+    </div>
+  );
+}
+
+export default async function ProfilePage() {
+  const user = await requireUser("/dashboard/profile");
+
+  const { data, error } = await supabaseServer
+    .from("profiles")
+    .select(
+      `
         id,
         full_name,
         email,
         role,
         avatar_url,
+        created_at,
         workspace_name,
         workspace_uid,
-        sso_sub,
-        created_at
-      `)
-      .eq("id", currentUser.sub)
-      .maybeSingle();
+        sso_sub
+      `,
+    )
+    .eq("id", user.sub)
+    .maybeSingle();
 
   if (error) {
-    throw new Error(error.message);
+    console.error("Failed to load member profile:", error);
   }
 
-  if (!profile) {
-    redirect("/auth/login");
-  }
+  const profile = data as ProfileRecord | null;
+
+  const fullName = profile?.full_name?.trim() || user.name || "Member";
+  const email = profile?.email || user.email || null;
+  const role = profile?.role || user.role || "member";
+  const avatarUrl = profile?.avatar_url || user.picture || null;
+  const profileId = profile?.id || user.sub;
+  const workspaceName = profile?.workspace_name || null;
+  const workspaceUid = profile?.workspace_uid || null;
+  const roleDetails = getRoleDetails(role);
 
   return (
-    <main className="min-h-screen bg-[#111827] text-[#F5F5F5]">
-      <div className="mx-auto max-w-300 px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
-        <Link
-          href="/dashboard"
-          className="group inline-flex items-center gap-2 text-sm text-[#737B8C] transition-colors hover:text-white"
-        >
-          <ArrowLeft
-            size={16}
-            className="transition-transform duration-200 group-hover:-translate-x-1"
-          />
-          Dashboard
-        </Link>
-
-        <section className="mt-12 border-b border-white/10 pb-12">
-          <div className="grid gap-10 lg:grid-cols-[140px_1fr_auto] lg:items-end">
-            <ProfileAvatar profile={profile} />
-
-            <div>
-              <div className="mb-5 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[#B45CFF]">
-                <span className="h-px w-8 bg-[#A855F7]" />
-                Your profile
-              </div>
-
-              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                {profile.full_name ||
-                  "Unnamed user"}
-              </h1>
-
-              <p className="mt-3 text-base text-[#8F96A5]">
-                {profile.email ||
-                  "No email available"}
-              </p>
-
-              <div className="mt-5 flex flex-wrap items-center gap-4">
-                <RoleBadge
-                  role={profile.role}
-                />
-
-                {profile.workspace_name && (
-                  <>
-                    <span className="h-1 w-1 bg-[#596273]" />
-
-                    <span className="text-sm text-[#C7CAD2]">
-                      {profile.workspace_name}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="lg:text-right">
-              <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#596273]">
-                Member since
-              </p>
-
-              <p className="mt-2 text-sm text-[#C7CAD2]">
-                {formatDate(
-                  profile.created_at,
-                )}
-              </p>
-            </div>
+    <main className="min-h-screen bg-[#FAF9F6] px-4 py-7 text-[#242333] sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <header className="mb-8">
+          <div className="mb-4 flex w-fit items-center gap-2 rounded-full border border-[#EAE7E0] bg-white px-3 py-1.5 text-xs font-semibold text-[#5257C8]">
+            <UserRound className="h-3.5 w-3.5" />
+            MY ACCOUNT
           </div>
-        </section>
 
-        <section className="grid gap-10 border-b border-white/10 py-12 lg:grid-cols-[280px_1fr] lg:gap-20">
-          <SectionIntro
-            title="Account"
-            description="Your account information as stored by AWS Student Builder Group at LPU."
-          />
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Your profile
+          </h1>
 
-          <div className="border-t border-white/10">
-            <InfoRow
-              label="Full name"
-              value={
-                profile.full_name ||
-                "Not available"
-              }
-            />
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#777584] sm:text-base">
+            Your account, your identity, your community. Here's the information
+            associated with your AWS SBG membership.
+          </p>
+        </header>
 
-            <InfoRow
-              label="Email"
-              value={
-                profile.email ||
-                "Not available"
-              }
-            />
-
-            <InfoRow
-              label="Workspace"
-              value={
-                profile.workspace_name ||
-                "Not assigned"
-              }
-            />
-
-            <InfoRow
-              label="Workspace UID"
-              value={
-                profile.workspace_uid ||
-                "Not assigned"
-              }
-              mono
-            />
+        {error && (
+          <div
+            role="status"
+            className="mb-6 rounded-2xl border border-[#F1D9A6] bg-[#FFF8E8] p-4 text-sm leading-6 text-[#855F15]"
+          >
+            Some profile details couldn't be loaded. Information below may be
+            based on your current signed-in session.
           </div>
-        </section>
+        )}
 
-        <section className="grid gap-10 border-b border-white/10 py-12 lg:grid-cols-[280px_1fr] lg:gap-20">
-          <SectionIntro
-            title="Access"
-            description="Your role determines which community and management features are available to your account."
-          />
+        <section className="overflow-hidden rounded-[28px] border border-[#EAE7E0] bg-white shadow-sm">
+          <div className="h-2 bg-gradient-to-r from-[#5257C8] via-[#908AE8] to-[#F07832]" />
 
-          <div className="border-t border-white/10">
-            <InfoRow
-              label="Role"
-              value={formatRole(
-                profile.role,
-              )}
-              icon={
-                profile.role ===
-                "admin" ? (
-                  <Shield size={14} />
-                ) : (
-                  <UserRound
-                    size={14}
+          <div className="p-5 sm:p-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              {avatarUrl ? (
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[25px] border border-[#EAE7E0] bg-[#EFEBFF]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={avatarUrl}
+                    alt={`${fullName}'s profile`}
+                    referrerPolicy="no-referrer"
+                    className="h-full w-full object-cover"
                   />
-                )
-              }
-            />
-
-            <InfoRow
-              label="Access level"
-              value={getAccessDescription(
-                profile.role,
+                </div>
+              ) : (
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[25px] bg-[#EFEBFF] text-2xl font-bold text-[#5257C8]">
+                  {getInitials(fullName)}
+                </div>
               )}
-            />
-          </div>
-        </section>
 
-        <section className="grid gap-10 border-b border-white/10 py-12 lg:grid-cols-[280px_1fr] lg:gap-20">
-          <SectionIntro
-            title="Identity"
-            description="Identifiers connecting your profile to the AWS LPU identity system."
-          />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="break-words text-2xl font-bold tracking-tight">
+                    {fullName}
+                  </h2>
 
-          <div className="border-t border-white/10">
-            <InfoRow
-              label="Profile ID"
-              value={profile.id}
-              mono
-            />
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#DFF3E5] px-2.5 py-1 text-xs font-semibold text-[#246C42]">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Signed in
+                  </span>
+                </div>
 
-            <InfoRow
-              label="SSO subject"
-              value={
-                profile.sso_sub ||
-                "Not available"
-              }
-              mono
-            />
-          </div>
-        </section>
+                <p className="mt-1 break-all text-sm text-[#777584]">
+                  {email || "No email associated with this account"}
+                </p>
 
-        <section className="py-12">
-          <div className="flex items-start gap-3 border border-white/10 bg-[#0D1421] p-5">
-            <CalendarDays
-              size={16}
-              className="mt-0.5 shrink-0 text-[#A855F7]"
-            />
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold ${roleDetails.className}`}
+                  >
+                    {roleDetails.label}
+                  </span>
 
-            <div>
-              <p className="text-sm font-medium text-[#C7CAD2]">
-                Identity-managed account
-              </p>
+                  {workspaceUid && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#EAE7E0] bg-[#FAF9F6] px-3 py-1.5 text-xs font-medium text-[#777584]">
+                      <Fingerprint className="h-3.5 w-3.5" />
+                      {workspaceUid}
+                    </span>
+                  )}
+                </div>
+              </div>
 
-              <p className="mt-1 text-sm leading-6 text-[#737B8C]">
-                Your name, email, avatar, and SSO
-                identity are managed through the AWS LPU
-                identity system. Contact an administrator if
-                those details need to be corrected.
-              </p>
+              <div className="flex shrink-0 items-center gap-2 self-start rounded-2xl bg-[#F5F3EE] px-3.5 py-2.5 text-xs font-medium text-[#777584] sm:self-center">
+                <ShieldCheck className="h-4 w-4 text-[#5257C8]" />
+                Account settings
+              </div>
             </div>
           </div>
         </section>
+
+        <section className="mt-7">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold tracking-tight">
+              Personal information
+            </h2>
+
+            <p className="mt-1 text-sm text-[#777584]">
+              Your identity details associated with your account.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <DetailItem
+              label="Full name"
+              value={fullName}
+              icon={UserRound}
+            />
+
+            <DetailItem
+              label="Email address"
+              value={email}
+              icon={Mail}
+            />
+
+            <DetailItem
+              label="Account role"
+              value={roleDetails.label}
+              icon={ShieldCheck}
+            />
+
+            <DetailItem
+              label="Account created"
+              value={formatDate(profile?.created_at)}
+              icon={CalendarDays}
+            />
+          </div>
+        </section>
+
+        <section className="mt-8">
+          <WorkspaceEditor
+            workspaceName={workspaceName}
+            workspaceUid={workspaceUid}
+          />
+        </section>
+
+        <section className="mt-8">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold tracking-tight">
+              Community identity
+            </h2>
+
+            <p className="mt-1 text-sm text-[#777584]">
+              Your account identifiers and identity provider.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <DetailItem
+              label="Profile ID"
+              value={profileId}
+              icon={Fingerprint}
+              mono
+            />
+
+            <DetailItem
+              label="Single sign-on"
+              value="AWS SBG Identity Services"
+              icon={AtSign}
+            />
+          </div>
+        </section>
+
+        <section className="mt-8 overflow-hidden rounded-[28px] border border-[#DCD8F5] bg-[#F2F0FF]">
+          <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#5257C8]">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold">
+                  Need to update your account details?
+                </h2>
+
+                <p className="mt-1 max-w-lg text-sm leading-6 text-[#777584]">
+                  You can update your workspace name and UID here. For other
+                  account details managed by AWS SBG Identity Services, open
+                  the SSO dashboard.
+                </p>
+              </div>
+            </div>
+
+            <a
+              href={SSO_DASHBOARD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#5257C8] px-5 py-3 font-semibold text-white transition hover:bg-[#4448B6]"
+            >
+              Open SSO dashboard
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
+          </div>
+        </section>
+
+        <footer className="mt-6 flex items-start gap-3 rounded-2xl border border-[#EAE7E0] bg-white p-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF0E6] text-[#C7652E]">
+            <Users className="h-4 w-4" />
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold">
+              One account, one identity
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-[#777584]">
+              Your profile is linked to your AWS SBG identity. Workspace
+              changes are saved to your profile and will appear here when the
+              page is refreshed.
+            </p>
+          </div>
+        </footer>
       </div>
     </main>
   );
-}
-
-function ProfileAvatar({
-  profile,
-}: {
-  profile: Profile;
-}) {
-  const initials =
-    profile.full_name
-      ?.split(/\s+/)
-      .slice(0, 2)
-      .map((part) =>
-        part
-          .charAt(0)
-          .toUpperCase(),
-      )
-      .join("") || "?";
-
-  return (
-    <div className="relative h-28 w-28 overflow-hidden rounded-full bg-[#172033]">
-      {profile.avatar_url ? (
-        <Image
-          src={profile.avatar_url}
-          alt={
-            profile.full_name ||
-            "Profile"
-          }
-          fill
-          priority
-          sizes="112px"
-          className="object-cover"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center text-3xl font-semibold text-[#A855F7]">
-          {initials}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function RoleBadge({
-  role,
-}: {
-  role: Profile["role"];
-}) {
-  const styles = {
-    member:
-      "border-white/10 text-[#8F96A5]",
-    core:
-      "border-blue-400/20 text-blue-300",
-    admin:
-      "border-[#A855F7]/30 text-[#C084FC]",
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center border bg-[#0D1421] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] ${styles[role]}`}
-    >
-      {formatRole(role)}
-    </span>
-  );
-}
-
-function SectionIntro({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div>
-      <h2 className="text-xl font-semibold tracking-tighter">
-        {title}
-      </h2>
-
-      <p className="mt-3 max-w-sm text-sm leading-6 text-[#737B8C]">
-        {description}
-      </p>
-    </div>
-  );
-}
-
-function InfoRow({
-  label,
-  value,
-  mono = false,
-  icon,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className="grid gap-2 border-b border-white/10 py-5 sm:grid-cols-[180px_1fr] sm:items-center">
-      <div className="flex items-center gap-2 text-xs text-[#596273]">
-        {icon && (
-          <span className="text-[#A855F7]">
-            {icon}
-          </span>
-        )}
-
-        {label}
-      </div>
-
-      <p
-        className={`text-sm text-[#C7CAD2] ${
-          mono
-            ? "break-all font-mono text-[11px]"
-            : ""
-        }`}
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function formatRole(
-  role: Profile["role"],
-) {
-  return (
-    role.charAt(0).toUpperCase() +
-    role.slice(1)
-  );
-}
-
-function getAccessDescription(
-  role: Profile["role"],
-) {
-  if (role === "admin") {
-    return "Full administrative access.";
-  }
-
-  if (role === "core") {
-    return "Community management access.";
-  }
-
-  return "Standard community member access.";
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat(
-    "en-IN",
-    {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    },
-  ).format(new Date(value));
 }
