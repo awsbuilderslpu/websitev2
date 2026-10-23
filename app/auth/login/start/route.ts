@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
   buildAuthorizationUrl,
@@ -17,13 +16,19 @@ export async function GET(request: Request) {
     !requestedNext.startsWith("//")
       ? requestedNext
       : "/dashboard";
-      
+
   const state = generateState();
   const nonce = generateNonce();
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-  const cookieStore = await cookies();
+  const authorizationUrl = buildAuthorizationUrl({
+    state,
+    nonce,
+    codeChallenge,
+  });
+
+  const response = NextResponse.redirect(authorizationUrl);
 
   const cookieOptions = {
     httpOnly: true,
@@ -33,16 +38,10 @@ export async function GET(request: Request) {
     path: "/",
   };
 
-  cookieStore.set("sso_state", state, cookieOptions);
-  cookieStore.set("sso_nonce", nonce, cookieOptions);
-  cookieStore.set("sso_code_verifier", codeVerifier, cookieOptions);
-  cookieStore.set("sso_next", next, cookieOptions);
+  response.cookies.set("sso_state", state, cookieOptions);
+  response.cookies.set("sso_nonce", nonce, cookieOptions);
+  response.cookies.set("sso_code_verifier", codeVerifier, cookieOptions);
+  response.cookies.set("sso_next", next, cookieOptions);
 
-  const authorizationUrl = buildAuthorizationUrl({
-    state,
-    nonce,
-    codeChallenge,
-  });
-
-  return NextResponse.redirect(authorizationUrl);
+  return response;
 }
